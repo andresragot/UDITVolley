@@ -44,43 +44,48 @@ void Ball::move(SDL_Rect& wall, int SCREEN_WIDTH, int SCREEN_HEIGHT, Player& p1,
         }
     }
 
-    if (checkCollision(wall, pos)) {
-        if (wall.x <= pos.x && (wall.x + wall.h >= pos.x)) {
-            if (wall.y <= pos.y+pos.y) {
-                mVelY *= -1;
-            }
+    if (checkCollision(ballCollider, wall))
+    {
+        if (ballCollider.y < wall.y)
+        {
+            mVelY *= -1;
         }
-        else {
+        else
+        {
             mVelX *= -1;
         }
     }
 
-    if (checkCollision(p1.pCollider, pos)) {
-        if (p1.x <= pos.x && (p1.x + p1.pCollider.h >= pos.x)) {
-            if (p1.pCollider.y <= pos.y+pos.h) {
-                mVelY *= -1;
-            }
+    if (checkCollision(ballCollider, p1.pCollider))
+    {
+        if (ballCollider.y < p1.y)
+        {
+            mVelY *= -1;
         }
-        else {
+        else
+        {
             mVelX *= -1;
         }
     }
-    if (checkCollision(p2.pCollider, pos)) {
-        if (p2.x <= pos.x && (p2.x + p2.pCollider.h >= pos.x)) {
-            if (p2.pCollider.y <= pos.y+pos.h) {
-                mVelY *= -1;
-            }
+
+    if (checkCollision(ballCollider, p2.pCollider))
+    {
+        if (ballCollider.y < p2.y)
+        {
+            mVelY *= -1;
         }
-        else {
+        else
+        {
             mVelX *= -1;
         }
     }
+
 
     //Move the Ball left or right
-    pos.x +=mVelX;
+    ballCollider.x += mVelX;
 
     //Move the Ball up or down
-    pos.y += mVelY;
+    ballCollider.y += mVelY;
 
 }
 
@@ -129,6 +134,8 @@ bool Ball::checkCollision(Circle& a, SDL_Rect& b)
         //This box and the circle have collided
         return true;
     }
+
+
 
     //If the shape have not collided
     return false;

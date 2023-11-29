@@ -93,29 +93,35 @@ bool Match::write_to_file(const char* _filename, const char* _line) {
 	return false;
 }
 
-bool Match::read_from_file(const char* _filename) {
-	FILE* fp = NULL;
-	char name1[50];
-	char name2[50];
-	int id1;
-	int id2;
-
-	if (file_exists(_filename)) {
-		fp = fopen(_filename, "r");
-		fscanf(fp, "%i,%i,%[^;];%[^;];%i,%i;%i", &id1, &id2, &name1, &name2, &points[0], &points[1], &duration);
-
-		fclose(fp);
-		player1.name = name1;
-		player2.name = name2;
-		player1.id = id1;
-		player2.id = id2;
-		return true;
-	}
-	return false;
+bool Match::read_from_file(const char* _filename) 
+{
+    return false;
 }
 
-void Match::to_string() {
+void Match::to_string() 
+{
 	cout << "Player 1 name : " << player1.name << " id: " << player1.id << " points: " << points[0] << endl;
 	cout << "Player 2 name : " << player2.name << " id: " << player2.id << " points: " << points[1] << endl;
 	cout << "Duration: " << duration << endl;
+}
+
+void Match::beginMatch()
+{
+    string _name1, _name2;
+    cout << "Tell me the name of the first player" << endl;
+    cin >> _name1;
+    cout << endl << "Tell me the name of the first player" << endl;
+    cin >> _name2;
+
+    player1 = Player(_name1, 0);
+    player2 = Player(_name2, 1);
+}
+
+void Match::Update(SDL_Rect& wall)
+{
+    ball.move(wall, SCREEN_WIDTH, SCREEN_HEIGHT, player1, player2);
+    player1.move(wall, SCREEN_WIDTH, SCREEN_HEIGHT);
+    player1.update();
+    player2.move(wall, SCREEN_WIDTH, SCREEN_HEIGHT);
+    player2.update();
 }

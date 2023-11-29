@@ -4,6 +4,11 @@
 #include <SDL_ttf.h>
 
 #include <string>
+
+#define SCREEN_WIDTH                        640
+#define SCREEN_HEIGHT                       480
+
+
 class LTexture
 {
 public:

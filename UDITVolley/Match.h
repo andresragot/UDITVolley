@@ -1,15 +1,18 @@
 #pragma once
 #pragma warning(disable : 4996)
 
+#include <fstream>
+
 #include "Player.h"
 #include "Ball.h"
-#include <fstream>
+#include "SQL_Volley.h"
 
 class Match
 {
 public:
     Player player1;
     Player player2;
+    Ball ball;
     unsigned int points[2] = { 0, 0 }; //TODO: asegurarnos de si debe estar aquí
     unsigned int duration = 0; // En segundos
     FILE* fp = NULL;
@@ -27,5 +30,8 @@ public:
     bool read_from_file(const char* _filename);
     void to_string();
 
+    void beginMatch();
+
+    void Update(SDL_Rect& wall);
 };
 

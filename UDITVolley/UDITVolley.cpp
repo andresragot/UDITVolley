@@ -5,14 +5,7 @@
 
 #include <iostream>
 #include <stdlib.h>     /* srand, rand */
-#include "Match.h"
-#include "Player.h"
-#include "LTexture.h"
-#include "Ball.h"
 #include <conio.h>
-
-#include "sqlite3/sqlite3.h"
-
 #include <stdio.h>
 
 //Using SDL, SDL_image
@@ -20,15 +13,16 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include "Match.h"
+#include "Player.h"
+#include "LTexture.h"
+#include "Ball.h"
+#include "SQL_Volley.h"
+
 using namespace std;
 
 //Screen dimension constants
-const static int SCREEN_WIDTH = 640;
-const static int SCREEN_HEIGHT = 480;
 
-Player player1("DEFAULT", 1);
-Player player2("DEFAULT", 2);
-Ball ball;
 
 int menu();
 
@@ -55,10 +49,6 @@ void close();
 
 static int callback(void* NotUsed, int argc, char** argv, char** azColName);
 
-int db_get_table();
-
-bool insert_games(sqlite3* _db);
-
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 
@@ -70,6 +60,9 @@ TTF_Font* gFont = NULL;
 
 //Scene textures
 LTexture gBallTexture, gPlayerOneTexture, gPlayerTwoTexture, gTextTextureOne, gTextTextureTwo;
+
+Match match;
+
 
 // Vamos a hacer el metodo para guardar una partida DONE
 // EXTRA: leer sobre sdl, descargar y aprender a compilar y vamos a pintar un rectangulo, una pelota roja y una verde
@@ -116,20 +109,8 @@ void pressMenu() {
     printf("6. Leave\n");
 }
 
-//Function called to define the names of the players
-void beginMatch(string& _name1, string& _name2) {
-    cout << "Tell me the name of the first player" << endl;
-    cin >> _name1;
-    cout << endl << "Tell me the name of the first player" << endl;
-    cin >> _name2;
-}
-
 //Function with the menu and does the option
 void play() {
-    Match match;
-
-    string name1 = "";
-    string name2 = "";
 
     static int idAnterior = 0;
 
@@ -138,10 +119,6 @@ void play() {
     while (option != 6) {
         switch (option) {
         case 1:
-            beginMatch(name1, name2);
-            player1 = Player(name1, ++idAnterior);
-            player2 = Player(name2, idAnterior + 1);
-            printf("id player 1: %d, id player 2: %d", player1.id, player2.id);
             match = Match();
             idAnterior++;
             SDLMain();
@@ -261,11 +238,7 @@ void SDLMain() {
                 }
 
                 //Move the ball and check collision
-                ball.move(wall, SCREEN_WIDTH, SCREEN_HEIGHT, player1, player2);
-                player1.move(wall, SCREEN_WIDTH, SCREEN_HEIGHT);
-                player1.update();
-                player2.move(wall, SCREEN_WIDTH, SCREEN_HEIGHT);
-                player2.update();
+               
 
                 //Clear Screen
                 SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -283,9 +256,9 @@ void SDLMain() {
                 SDL_RenderDrawRect(gRenderer, &wall);
 
                 //Render dot
-                ball.render(gBallTexture, gRenderer);
-                player1.render(gPlayerOneTexture, gRenderer);
-                player2.render(gPlayerTwoTexture, gRenderer);
+                match.ball.render(gBallTexture, gRenderer);
+                match.player1.render(gPlayerOneTexture, gRenderer);
+                match.player2.render(gPlayerTwoTexture, gRenderer);
 				gTextTextureOne.render(gRenderer, (SCREEN_WIDTH/5*1), 50);
                 gTextTextureTwo.render(gRenderer, (SCREEN_WIDTH/5*4), 50);
 
@@ -388,16 +361,7 @@ bool loadMedia()
 		}
 	}
 
-
-    //Load PNG surface
-    /*gPNGSurface = loadSurface("06_extension_libraries_and_loading_other_image_formats/loaded.png");
-    if (gPNGSurface == NULL)
-    {
-        printf("Failed to load PNG image!\n");
-        success = false;
-    }*/
-
-    //Nothing to load
+    //Nothing left to load
     return success;
 }
 
@@ -438,7 +402,8 @@ void close()
     SDL_Quit();
 }
 
-static int callback(void* data, int argc, char** argv, char** azColName) {
+static int callback(void* data, int argc, char** argv, char** azColName) 
+{
     int i;
 
     for (i = 0; i < argc; i++) {
@@ -446,96 +411,6 @@ static int callback(void* data, int argc, char** argv, char** azColName) {
     }
 
     return 0;
-}
-
-int db_get_table() {
-   
-    sqlite3* db = NULL;
-
-   
-    // Save any error messages
-    char* zErrMsg = 0;
-
-    // Save the result of opening the file
-    int rc;
-
-    sqlite3_initialize();
-
-    // Save the result of opening the file
-    rc = sqlite3_open("volley_games.db", &db);
-    
-    if (rc) {
-        // Show an error message
-        std::cout << "DB Error: " << sqlite3_errmsg(db) << std::endl;
-        // Close the connection
-        sqlite3_close(db);
-        // Return an error
-        return 1;
-    }
-
-    const char* sql = "SELECT * FROM games;";
-
-    /*sql = "
-        SELECT p.id, u.id as user_id, p.points, u.name
-        FROM partidos p
-            LEFT OUTER JOIN users u ON p.user_id = u.id
-        ORDER BY p.points DESC
-        ";*/
-
-    int num_rows = 0;
-    int num_cols = 0;
-    char* errMsg = NULL;
-
-    char** records = NULL;
-
-    int res = sqlite3_get_table(db, sql, &records, &num_rows, &num_cols, &errMsg);
-
-    if (res != SQLITE_OK) {
-        sqlite3_free(errMsg);
-        return res;
-    }
-
-
-    for (int i = 0; i < num_rows; i++) {
-        for (int j = 0; j < num_cols; j++) {
-            const char* key = records[j];
-            const char* save = records[(i + 1) * num_cols + j];
-            if (strcmp(key, "id") == 0) {
-                printf("\n%s :", key);
-            }
-            printf("%s\t", save);
-        }
-    }
-
-    sqlite3_free_table(records);
-    return 0;
-}
-
-bool insert_games(sqlite3* _db) {
-    if (_db == NULL) {
-        return false;
-    }
-
-    sqlite3_stmt* stmt = NULL;
-
-    const char* sql = "INSERT INTO games (name_player_1, name_player_2, points_player_1, points_player_2) VALUES (?, ?, ?, ?)";
-
-    sqlite3_prepare_v2(_db, sql, -1, &stmt, NULL);
-
-    
-    sqlite3_bind_text(stmt, 1, player1.name.c_str(), 1, SQLITE_TRANSIENT);
-    sqlite3_bind_text(stmt, 2, player2.name.c_str(), 1, SQLITE_TRANSIENT);
-    sqlite3_bind_int(stmt, 3, player1.points);
-    sqlite3_bind_int(stmt, 4, player2.points);
-    sqlite3_step(stmt);
-
-    sqlite3_clear_bindings(stmt);
-    sqlite3_reset(stmt);
-    
-
-    sqlite3_finalize(stmt);
-
-    return true;
 }
 
 //Clase jugador y pelota
