@@ -10,19 +10,24 @@
 class Match
 {
 public:
-    Player player1;
-    Player player2;
+
+    Player player1 = Player("DEFAULT", 1);
+    Player player2 = Player("DEFAULT", 2);
     Ball ball;
+    SDL_Rect wall;
     unsigned int points[2] = { 0, 0 }; //TODO: asegurarnos de si debe estar aquí
     unsigned int duration = 0; // En segundos
     FILE* fp = NULL;
 
+    
+
 public:
+
     Match& operator=(const Match&);         //Asignación de copia
     Match();
     Match(std::string nameOne, int idOne, std::string nameTwo, int idTwo) {}
-    bool save();
-    void write();
+    bool save_game(sqlite3* db);
+    //void write();
     void sim();
     bool file_exists(const char* _filename);
     uint32_t file_size(const char* _filename);
@@ -31,7 +36,36 @@ public:
     void to_string();
 
     void beginMatch();
+    bool init_match();
+    void match_main();
+    void close();
 
-    void Update(SDL_Rect& wall);
+    void HandleInput(SDL_Event e);
+    void Update();
+
+    bool loadMedia();
+    bool loadPoints();
+
+    void clear();
+    void render();
+
+    bool win_condition();
+
+    static int static_callback(void* data, int argc, char** argv, char** azColName);
+    int callback(int argc, char** argv, char** azColName);
+
+private:
+
+    //The window we'll be rendering to
+    SDL_Window* gWindow = NULL;
+
+    //The window renderer
+    SDL_Renderer* gRenderer = NULL;
+
+    //Globally used fonts
+    TTF_Font* gFont = NULL;
+
+    //Scene textures
+    LTexture gBallTexture, gPlayerOneTexture, gPlayerTwoTexture, gTextTextureOne, gTextTextureTwo;
 };
 

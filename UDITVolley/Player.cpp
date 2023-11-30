@@ -13,7 +13,7 @@ Player::Player() {
 
 void Player::handleEvent(SDL_Event& e) {
     //If a key was pressed
-    if (id % 2 == 0) {
+    if (id % 2 != 0) {
         if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
         {
             //Adjust the velocity
@@ -61,31 +61,27 @@ void Player::handleEvent(SDL_Event& e) {
     }
 }
 
-void Player::move(SDL_Rect& wall, int SCREEN_WIDTH, int SCREEN_HEIGHT) {
-    //Move the Ball left or right
-    x += mVelX;
-    pCollider.x = x;
+void Player::move(SDL_Rect& wall) {
+    //Move the Player left or right
+    pCollider.x += mVelX;
 
-    //If the Ball went too far to the left or right
-    if ((x < 0) || (x + PLAYER_WIDTH > SCREEN_WIDTH) || checkCollision(wall, pCollider))
+    //If the Player went too far to the left or right
+    if ((pCollider.x < 0) || (pCollider.x + PLAYER_WIDTH > SCREEN_WIDTH) || checkCollision(wall, pCollider))
     {
         //Move back
-        x -= mVelX;
-        pCollider.x = x;
+        pCollider.x -= mVelX;
     }
 
-    //Move the Ball up or down
-    y += mVelY;
-    pCollider.y = y;
+    //Move the Player up or down
+    pCollider.y += mVelY;
 
-    //If the Ball went too far up or down
-    if ((y < 0) || (y + PLAYER_HEIGHT > SCREEN_HEIGHT) || checkCollision(wall, pCollider))
+    //If the Player went too far up or down
+    if ((pCollider.y < 0) || (pCollider.y + PLAYER_HEIGHT > SCREEN_HEIGHT) || checkCollision(wall, pCollider))
     {
         //Move back
-        y -= mVelY;
-        pCollider.y = y;
+        pCollider.y -= mVelY;
     }
-    if (y + PLAYER_HEIGHT == SCREEN_HEIGHT) {
+    if (pCollider.y + PLAYER_HEIGHT == SCREEN_HEIGHT) {
         mVelY = 0;
         canJump = true;
     }
@@ -94,7 +90,7 @@ void Player::move(SDL_Rect& wall, int SCREEN_WIDTH, int SCREEN_HEIGHT) {
 void Player::render(LTexture& gPlayerTexture, SDL_Renderer* gRenderer)
 {
     //Show the Ball
-    gPlayerTexture.render(gRenderer, x, y);
+    gPlayerTexture.render(gRenderer, pCollider.x, pCollider.y);
 }
 
 bool Player::checkCollision(SDL_Rect a, SDL_Rect b) {

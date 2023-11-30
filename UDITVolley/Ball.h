@@ -35,7 +35,7 @@ public:
 	Ball();
 
 	//Moves the Ball
-	void move(SDL_Rect& wall, int SCREEN_WIDTH, int SCREEN_HEIGHT, Player& p1, Player& p2);
+	void move(SDL_Rect& wall, Player& p1, Player& p2);
 
 	//Shows the Ball on the screen
 	void render(LTexture& gBallTexture, SDL_Renderer* gRenderer);

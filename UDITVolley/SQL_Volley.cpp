@@ -1,7 +1,7 @@
 #include "SQL_Volley.h"
 
 
-int SQL_Volley::db_get_table() {
+int db_get_table() {
 
     sqlite3* db = NULL;
 
@@ -66,7 +66,7 @@ int SQL_Volley::db_get_table() {
 }
 
 
-bool SQL_Volley::insert_games(sqlite3* _db, Player p1, Player p2) 
+bool insert_games(sqlite3* _db, Player p1, Player p2) 
 {
     if (_db == NULL) 
     {
@@ -95,7 +95,7 @@ bool SQL_Volley::insert_games(sqlite3* _db, Player p1, Player p2)
     return true;
 }
 
-bool SQL_Volley::insert_player(sqlite3* _db, Player p)
+bool insert_player(sqlite3* _db, Player p)
 {
     if (_db == NULL)
     {
@@ -112,3 +112,4 @@ bool SQL_Volley::insert_player(sqlite3* _db, Player p)
 
     return false;
 }
+

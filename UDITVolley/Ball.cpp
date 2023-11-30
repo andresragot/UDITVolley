@@ -14,7 +14,7 @@ Ball::Ball()
     mVelY = Ball_VEL;
 }
 
-void Ball::move(SDL_Rect& wall, int SCREEN_WIDTH, int SCREEN_HEIGHT, Player& p1, Player& p2)
+void Ball::move(SDL_Rect& wall, Player& p1, Player& p2)
 {
     //If the Ball went too far to the left or right
     if ((ballCollider.x - ballCollider.r < 0) || (ballCollider.x + ballCollider.r > SCREEN_WIDTH))
@@ -44,41 +44,27 @@ void Ball::move(SDL_Rect& wall, int SCREEN_WIDTH, int SCREEN_HEIGHT, Player& p1,
         }
     }
 
+
     if (checkCollision(ballCollider, wall))
     {
-        if (ballCollider.y < wall.y)
+        // If ball is moving downwards and hits top of collider
+        if (mVelY > 0 && ballCollider.y + ballCollider.r >= wall.y)
         {
             mVelY *= -1;
         }
+        //If ball is moving upwards and hits bottom of collider
+        else if (mVelY < 0 && ballCollider.y - ballCollider.r <= wall.y + wall.h)
+        {
+            mVelY *= -1;
+        }
+        // if ball hits sides
         else
         {
             mVelX *= -1;
         }
     }
-
-    if (checkCollision(ballCollider, p1.pCollider))
-    {
-        if (ballCollider.y < p1.y)
-        {
-            mVelY *= -1;
-        }
-        else
-        {
-            mVelX *= -1;
-        }
-    }
-
-    if (checkCollision(ballCollider, p2.pCollider))
-    {
-        if (ballCollider.y < p2.y)
-        {
-            mVelY *= -1;
-        }
-        else
-        {
-            mVelX *= -1;
-        }
-    }
+    checkCollision(ballCollider, p1.pCollider);
+    checkCollision(ballCollider, p2.pCollider);
 
 
     //Move the Ball left or right
@@ -132,6 +118,40 @@ bool Ball::checkCollision(Circle& a, SDL_Rect& b)
     if (distanceSquared(a.x, a.y, cX, cY) < a.r * a.r)
     {
         //This box and the circle have collided
+        //Calculate the difference in the x and y positions
+        int diffX = a.x - cX;
+        int diffY = a.y - cY;
+
+        //If the absolute difference in x is less than the absolute difference in y
+        //Then the collision happened from the top or bottom
+        if (abs(diffX) < abs(diffY))
+        {
+            //If diffY is less than 0, the collision happened from the top
+            //Otherwise, it happened from the bottom.
+            //Position correction
+            if (diffY < 0)
+            {
+                ballCollider.y = b.y - ballCollider.r;
+            }
+            else
+            {
+                ballCollider.y = b.y + b.h + ballCollider.r;
+            }
+        }
+        else
+        {
+            //Otherwise, the collision happened from the left or 
+            //Position correction
+            if (diffX < 0)
+            {
+                ballCollider.x = b.x - ballCollider.r;
+            }
+            else
+            {
+                ballCollider.x = b.x + b.w + ballCollider.r;
+            }
+        }
+
         return true;
     }
 
