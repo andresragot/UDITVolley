@@ -16,7 +16,7 @@ public:
     Ball ball;
     SDL_Rect wall;
     unsigned int points[2] = { 0, 0 }; //TODO: asegurarnos de si debe estar aquí
-    unsigned int duration = 0; // En segundos
+    int duration = 0; // En segundos
     FILE* fp = NULL;
 
     
@@ -28,7 +28,6 @@ public:
     Match(std::string nameOne, int idOne, std::string nameTwo, int idTwo) {}
     bool save_game(sqlite3* db);
     //void write();
-    void sim();
     bool file_exists(const char* _filename);
     uint32_t file_size(const char* _filename);
     bool write_to_file(const char* _filename, const char* _line);
@@ -51,8 +50,7 @@ public:
 
     bool win_condition();
 
-    static int static_callback(void* data, int argc, char** argv, char** azColName);
-    int callback(int argc, char** argv, char** azColName);
+    static int callback(void* data, int argc, char** argv, char** azColName);
 
 private:
 
@@ -66,6 +64,6 @@ private:
     TTF_Font* gFont = NULL;
 
     //Scene textures
-    LTexture gBallTexture, gPlayerOneTexture, gPlayerTwoTexture, gTextTextureOne, gTextTextureTwo;
+    LTexture gBallTexture, gPlayerOneTexture, gPlayerTwoTexture, gTextTextureOne, gTextTextureTwo, gTextTextureTimer;
 };
 

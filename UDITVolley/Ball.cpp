@@ -17,21 +17,21 @@ Ball::Ball()
 void Ball::move(SDL_Rect& wall, Player& p1, Player& p2)
 {
     //If the Ball went too far to the left or right
-    if ((ballCollider.x - ballCollider.r < 0) || (ballCollider.x + ballCollider.r > SCREEN_WIDTH))
+    if ((ballCollider.x - ballCollider.r <= 0) || (ballCollider.x + ballCollider.r >= SCREEN_WIDTH))
     {
         //Move back
         mVelX *= -1;
     }
 
     //If the Ball went too far up or down
-    if ((ballCollider.y - ballCollider.r < 0))
+    if ((ballCollider.y - ballCollider.r <= 0))
     {
         //Move back
         mVelY *= -1;
     }
 
     //Ball touched the floor
-    if ((ballCollider.y + ballCollider.r > SCREEN_HEIGHT)) 
+    if ((ballCollider.y + ballCollider.r >= SCREEN_HEIGHT)) 
     {
         printf("Toque el suelo\n");
         if (ballCollider.x + ballCollider.r < SCREEN_WIDTH / 2 ) {
@@ -45,24 +45,7 @@ void Ball::move(SDL_Rect& wall, Player& p1, Player& p2)
     }
 
 
-    if (checkCollision(ballCollider, wall))
-    {
-        // If ball is moving downwards and hits top of collider
-        if (mVelY > 0 && ballCollider.y + ballCollider.r >= wall.y)
-        {
-            mVelY *= -1;
-        }
-        //If ball is moving upwards and hits bottom of collider
-        else if (mVelY < 0 && ballCollider.y - ballCollider.r <= wall.y + wall.h)
-        {
-            mVelY *= -1;
-        }
-        // if ball hits sides
-        else
-        {
-            mVelX *= -1;
-        }
-    }
+    checkCollision(ballCollider, wall);
     checkCollision(ballCollider, p1.pCollider);
     checkCollision(ballCollider, p2.pCollider);
 
@@ -128,6 +111,7 @@ bool Ball::checkCollision(Circle& a, SDL_Rect& b)
         {
             //If diffY is less than 0, the collision happened from the top
             //Otherwise, it happened from the bottom.
+            mVelY *= -1;
             //Position correction
             if (diffY < 0)
             {
@@ -141,6 +125,7 @@ bool Ball::checkCollision(Circle& a, SDL_Rect& b)
         else
         {
             //Otherwise, the collision happened from the left or 
+            mVelX *= -1;
             //Position correction
             if (diffX < 0)
             {
@@ -154,8 +139,6 @@ bool Ball::checkCollision(Circle& a, SDL_Rect& b)
 
         return true;
     }
-
-
 
     //If the shape have not collided
     return false;

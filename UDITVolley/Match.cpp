@@ -20,14 +20,6 @@ Match::Match()
 	wall.h = 200;
 }
 
-void Match::sim() {
-
-	points[0] = rand() % 26;
-	points[1] = rand() % 26;
-
-	duration = rand() % 256;
-}
-
 bool Match::file_exists(const char* _filename) {
 	FILE* fp = fopen(_filename, "r");
 
@@ -107,9 +99,12 @@ void Match::Update()
 bool Match::loadPoints()
 {
 	bool success = true;
+	char timer[6] = "00:00";
+	
+	sprintf(timer, "%i:%i", (duration / 60), (duration % 60));
 	//Render text
 	SDL_Color textColor = { 0,0,0 };
-	if (!(gTextTextureOne.loadFromRendererText(std::to_string(player1.points), textColor, gFont, gRenderer) && gTextTextureTwo.loadFromRendererText(std::to_string(player2.points), textColor, gFont, gRenderer))) {
+	if (!(gTextTextureOne.loadFromRendererText(std::to_string(player1.points), textColor, gFont, gRenderer) && gTextTextureTwo.loadFromRendererText(std::to_string(player2.points), textColor, gFont, gRenderer) && gTextTextureTimer.loadFromRendererText(timer, textColor,gFont, gRenderer))) {
 		printf("Failed to render text texture!\n");
 		success = false;
 	}
@@ -135,7 +130,8 @@ bool Match::loadMedia()
 	else {
 		//Render text
 		SDL_Color textColor = { 0,0,0 };
-		if (!(gTextTextureOne.loadFromRendererText("0", textColor, gFont, gRenderer) && gTextTextureTwo.loadFromRendererText("0", textColor, gFont, gRenderer))) {
+		if (!(gTextTextureOne.loadFromRendererText("0", textColor, gFont, gRenderer) && gTextTextureTwo.loadFromRendererText("0", textColor, gFont, gRenderer) && gTextTextureTimer.loadFromRendererText("0", textColor, gFont, gRenderer))) 
+		{
 			printf("Failed to render text texture!\n");
 			success = false;
 		}
@@ -158,6 +154,7 @@ void Match::render()
 	player2.render(gPlayerTwoTexture, gRenderer);
 	gTextTextureOne.render(gRenderer, (SCREEN_WIDTH / 5 * 1), 50);
 	gTextTextureTwo.render(gRenderer, (SCREEN_WIDTH / 5 * 4), 50);
+	gTextTextureTimer.render(gRenderer, (SCREEN_WIDTH / 2), 50);
 
 	//Render wall
 	SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0x00, 0xFF);
@@ -270,7 +267,7 @@ void Match::match_main()
 		"points_player_2 INTEGER); ";
 
 	// Run the SQL (convert the string to a C-String with c_str() )
-	rc = sqlite3_exec(db, sql.c_str(), static_callback, 0, &zErrMsg);
+	rc = sqlite3_exec(db, sql.c_str(), callback, 0, &zErrMsg);
 
 	//Start up SDL and create window
 	if (!init_match())
@@ -286,6 +283,11 @@ void Match::match_main()
 		}
 		else
 		{
+
+			Uint64 now = SDL_GetPerformanceCounter();
+			Uint64 last = 0;
+			int deltaTime = 0;
+
 			//Main loop flag
 			bool quit = false;
 
@@ -295,13 +297,20 @@ void Match::match_main()
 			//While application is running
 			while (!quit)
 			{
+				last = now;
+				now = SDL_GetPerformanceCounter();
+				
+				deltaTime = (int)((now - last) / (int)SDL_GetPerformanceFrequency());
+
+				duration += deltaTime;
+
 				//Handle events on queue
 				while (SDL_PollEvent(&e) != 0)
 				{
 					//User requests quit
 					if (e.type == SDL_QUIT)
 					{
-						//insert_games(db); //TODO: Cambiar de sitio a Match.
+						save_game(db);
 						quit = true;
 					}
 					//Handle input
@@ -347,6 +356,7 @@ void Match::close()
 	gPlayerTwoTexture.free();
 	gTextTextureOne.free();
 	gTextTextureTwo.free();
+	gTextTextureTimer.free();
 
 	//Free global font
 	TTF_CloseFont(gFont);
@@ -364,13 +374,7 @@ void Match::close()
 	SDL_Quit();
 }
 
-int Match::static_callback(void* data, int argc, char** argv, char** azColName)
-{
-	Match* Instance = static_cast<Match*>(data);
-	return Instance->callback(argc, argv, azColName);
-}
-
-int Match::callback(int argc, char** argv, char** azColName)
+int Match::callback(void* data, int argc, char** argv, char** azColName)
 {
 	int i;
 
