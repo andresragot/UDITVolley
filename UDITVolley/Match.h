@@ -19,8 +19,6 @@ public:
     int duration = 0; // En segundos
     FILE* fp = NULL;
 
-    
-
 public:
 
     Match& operator=(const Match&);         //Asignación de copia
@@ -34,9 +32,12 @@ public:
     bool read_from_file(const char* _filename);
     void to_string();
 
-    void beginMatch();
+    void check_player(sqlite3* db, std::string name, bool _player);
+    void beginMatch(sqlite3* db);
     bool init_match();
     void match_main();
+    void load_match();
+    void get_ranks();
     void close();
 
     void HandleInput(SDL_Event e);
@@ -49,8 +50,6 @@ public:
     void render();
 
     bool win_condition();
-
-    static int callback(void* data, int argc, char** argv, char** azColName);
 
 private:
 

@@ -82,11 +82,11 @@ void play() {
     while (option != 6) {
         switch (option) {
         case 1:
-            match.beginMatch();
             match.match_main();
             break;
         case 2:
-            db_get_table();
+            //db_get_table();
+            match.load_match();
             cout << "The match has been load" << endl;
             _getch();
             break;
@@ -99,7 +99,7 @@ void play() {
             _getch();
             break;
         case 5:
-            cout << "Function not developped yet" << endl;
+            match.get_ranks();
             _getch();
             break;
         case 6:

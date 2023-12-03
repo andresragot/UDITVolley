@@ -4,6 +4,12 @@
 
 using namespace std;
 
+
+/*
+	Extern variables
+*/
+extern std::vector<Game> games_played;
+
 Match& Match::operator=(const Match& c) {
 	player1.name = c.player1.name;
 	player1.id = c.player1.id;
@@ -69,16 +75,67 @@ void Match::to_string()
 	cout << "Duration: " << duration << endl;
 }
 
-void Match::beginMatch()
+void Match::check_player(sqlite3* db, std::string _name, bool _player)
 {
-    string _name1, _name2;
+	std::string _option = NULL;
+	//If bool true = player 1
+
+	while(player_exists(db, _name))
+	{
+		cout << "There is already a Player with the name:" << _name << endl;
+		cout << "If you want to use that player press Y." << endl << "If you want to use another player Press N" << endl;
+		cout << "Y Or N" << endl;
+		cin >> _option;
+		cout << endl;
+
+		if (_option == "Y")
+		{
+			if (_player)
+			{
+				player1 = get_player(db, _name);
+			}
+			else
+			{
+				player2 = get_player(db, _name);
+			}
+		}
+		else if (_option == "N")
+		{
+			cout << "Tell me another name please" << endl;
+			cin >> _name;
+			cout << endl;
+		}
+		else
+		{
+			cout << "Not available option" << endl;
+		}
+	}
+
+	if (_player)
+	{
+		player1 = Player(_name, 0);
+	}
+	else
+	{
+		player2 = Player(_name, 1);
+	}
+}
+
+void Match::beginMatch(sqlite3* db)
+{
+    string _name1, _name2, _option;
     cout << "Tell me the name of the first player" << endl;
     cin >> _name1;
+	cout << endl;
+	check_player(db, _name1, true);
+
     cout << endl << "Tell me the name of the first player" << endl;
     cin >> _name2;
+	cout << endl;
+	check_player(db, _name2, false);
 
-    player1 = Player(_name1, 0);
-    player2 = Player(_name2, 1);
+	insert_player(db, player1);
+	insert_player(db, player2);
 }
 
 void Match::HandleInput(SDL_Event e)
@@ -173,7 +230,7 @@ bool Match::win_condition()
 
 bool Match::save_game(sqlite3* db)
 {
-	return insert_games(db, player1, player2);
+	return insert_games(db, player1, player2, duration);
 }
 
 bool Match::init_match()
@@ -233,41 +290,17 @@ bool Match::init_match()
 
 void Match::match_main()
 {
-	// Pointer to SQLite connection
-	sqlite3* db;
+	sqlite3* db = open_table();
 
-	// Save any error messages
-	char* zErrMsg = 0;
-
-	// Save the result of opening the file
-	int rc;
-
-	// Save any SQL
-	std::string sql;
-
-	sqlite3_initialize();
-	// Save the result of opening the file
-	rc = sqlite3_open("volley_games.db", &db);
-
-	if (rc) {
-		// Show an error message
-		std::cout << "DB Error: " << sqlite3_errmsg(db) << std::endl;
-		// Close the connection
-		sqlite3_close(db);
-		// Return an error
-		return;
+	if (db == nullptr)
+	{
+		printf("Failed to open database");
 	}
 
-	// Save SQL to create a table
-	sql = "CREATE TABLE IF NOT EXISTS games ("  \
-		"id    INTEGER  PRIMARY KEY NOT NULL," \
-		"name_player_1 TEXT,"\
-		"name_player_2 TEXT,"\
-		"points_player_1 INTEGER,"\
-		"points_player_2 INTEGER); ";
+	get_table_games(db);
+	get_table_players(db);
 
-	// Run the SQL (convert the string to a C-String with c_str() )
-	rc = sqlite3_exec(db, sql.c_str(), callback, 0, &zErrMsg);
+	beginMatch(db);
 
 	//Start up SDL and create window
 	if (!init_match())
@@ -294,6 +327,9 @@ void Match::match_main()
 			//Event handler
 			SDL_Event e;
 
+			player1.games++;
+			player2.games++;
+
 			//While application is running
 			while (!quit)
 			{
@@ -311,6 +347,8 @@ void Match::match_main()
 					if (e.type == SDL_QUIT)
 					{
 						save_game(db);
+						update_player(db, player1);
+						update_player(db, player2);
 						quit = true;
 					}
 					//Handle input
@@ -334,7 +372,17 @@ void Match::match_main()
 
 				if (win_condition()) {
 					//Meter base de datos acá
+					if (player1.points >= 25)
+					{
+						player1.wins++;
+					}
+					else if (player2.points >= 25)
+					{
+						player2.wins++;
+					}
 					save_game(db);
+					update_player(db, player1);
+					update_player(db, player2);
 					quit = true;
 				}
 			}
@@ -346,6 +394,26 @@ void Match::match_main()
 
 	//Free resources and close SDL
 	close();
+}
+
+void Match::load_match()
+{
+	sqlite3* db = open_table();
+
+	games_played.clear();
+	db_get_table(db);
+	get_games();
+
+	sqlite3_close(db);
+}
+
+void Match::get_ranks()
+{
+	sqlite3* db = open_table();
+
+	get_rankings(db);
+
+	sqlite3_close(db);
 }
 
 void Match::close()
@@ -372,15 +440,4 @@ void Match::close()
 	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();
-}
-
-int Match::callback(void* data, int argc, char** argv, char** azColName)
-{
-	int i;
-
-	for (i = 0; i < argc; i++) {
-		printf("%s = %s", azColName[i], argv[i] ? argv[i] : NULL);
-	}
-
-	return 0;
 }

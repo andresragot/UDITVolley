@@ -3,6 +3,8 @@
 Player& Player::operator=(const Player& c) {
     name = c.name;
     id = c.id;
+    games = c.games;
+    wins = c.wins;
     return *this;
 }
 
