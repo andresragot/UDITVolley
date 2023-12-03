@@ -1,5 +1,10 @@
 #include "Ball.h"
 
+Ball::Circle& Ball::getCollider()
+{
+    return ballCollider;
+}
+
 Ball::Ball()
 {
     //Initialize the offsets
@@ -33,7 +38,8 @@ void Ball::move(SDL_Rect& wall, Player& p1, Player& p2)
     //Ball touched the floor
     if ((ballCollider.y + ballCollider.r >= SCREEN_HEIGHT)) 
     {
-        printf("Toque el suelo\n");
+        //DEBUG
+        //printf("Toque el suelo\n");
         if (ballCollider.x + ballCollider.r < SCREEN_WIDTH / 2 ) {
             p2.points++;
             mVelY *= -1;
@@ -74,7 +80,7 @@ bool Ball::checkCollision(Circle& a, SDL_Rect& b)
     {
         cX = b.x;
     }
-    else if(a.x > b.x +b.w)
+    else if (a.x > b.x +b.w)
     {
         cX = b.x + b.w;
     }

@@ -1,4 +1,5 @@
 #include "SQL_Volley.h"
+#include <conio.h>
 
 /*
     Global variables
@@ -76,10 +77,11 @@ void get_games()
 {
     std::cout << "Select Match to load" << std::endl;
 
-    int i = 0;
+    int i = 1;
     for (const auto& val : games_played)
     {
         std::cout << i << " " << val.name_player_1 << ": " << val.points_player_1 << " VS " << val.name_player_2 << ": " << val.points_player_2 << " duration: " << val.duration << std::endl;
+        i++;
     }
 
     //TODO: poder escoger el match
@@ -99,8 +101,8 @@ bool insert_games(sqlite3* _db, Player _p1, Player _p2, int _duration)
 
     if(sqlite3_prepare_v2(_db, sql, -1, &stmt, NULL) == SQLITE_OK)
     {
-        sqlite3_bind_text(stmt, 1, _p1.name.c_str(), 1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt, 2, _p2.name.c_str(), 1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 1, _p1.name.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2, _p2.name.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_int(stmt, 3, _p1.points);
         sqlite3_bind_int(stmt, 4, _p2.points);
         sqlite3_bind_int(stmt, 5, _duration);
@@ -141,7 +143,7 @@ bool insert_player(sqlite3* _db, Player _p)
 
     if (sqlite3_prepare_v2(_db, sql, -1, &stmt, NULL) == SQLITE_OK)
     {
-        sqlite3_bind_text(stmt, 1, _p.name.c_str(), 1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 1, _p.name.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_int(stmt, 2, _p.games);
         sqlite3_bind_int(stmt, 3, _p.wins);
         int result = sqlite3_step(stmt);
@@ -154,7 +156,7 @@ bool insert_player(sqlite3* _db, Player _p)
 
         if (result != SQLITE_DONE)
         {
-            printf("Error inserting game");
+            printf("Error inserting player");
             return false;
         }
 
@@ -271,8 +273,6 @@ bool player_exists(sqlite3* db, std::string playerName)
         return false;
     }
 
-    std::cout << "Checking name";
-
     sqlite3_stmt* stmt;
     std::string sql = "SELECT name FROM players WHERE name = ?";
 
@@ -285,12 +285,12 @@ bool player_exists(sqlite3* db, std::string playerName)
 
         if (result == SQLITE_ROW)
         {
-            std::cout << "Hay player";
+            //DEBUG
+            //std::cout << "Hay player" << std::endl;
             return true;
         }
     }
 
-    std::cout << "No hay player";
     return false;
 
 }
@@ -305,7 +305,8 @@ Player get_player(sqlite3* db, std::string playerName)
 
     Player temp;
 
-    std::cout << "Get player";
+    //Debug
+    //std::cout << "Get player" << std::endl;
 
     sqlite3_stmt* stmt;
     std::string sql = "SELECT * FROM players WHERE name = ?";
@@ -315,16 +316,24 @@ Player get_player(sqlite3* db, std::string playerName)
         sqlite3_bind_text(stmt, 1, playerName.c_str(), -1, SQLITE_STATIC);
 
         int result = sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
+
+        // DEBUG
+        //std::cout << "Entro en ok" << std::endl;
 
         if (result == SQLITE_ROW)
         {
+            // DEBUG
+            //std::cout << "Entro en row" << std::endl;
+
             temp.name = std::string(reinterpret_cast <const char*> (sqlite3_column_text(stmt, 0)));
             temp.games = sqlite3_column_int(stmt, 1);
             temp.wins = sqlite3_column_int(stmt, 2);
 
+            sqlite3_finalize(stmt);
             return temp;
+
         }
+        sqlite3_finalize(stmt);
     }
 
     return Player();
@@ -340,7 +349,7 @@ void update_player(sqlite3* _db, Player _p)
 
     sqlite3_stmt* stmt;
 
-    std::string sql = "UPDATE player SET games = ?, wins = ? WHERE name = ?";
+    std::string sql = "UPDATE players SET games = ?, wins = ? WHERE name = ?";
 
     if (sqlite3_prepare_v2(_db, sql.c_str(), -1, &stmt, 0) == SQLITE_OK)
     {
@@ -364,7 +373,7 @@ void update_player(sqlite3* _db, Player _p)
     {
         std::cout << "Error preparing declaration" << std::endl;
     }
-
+    
 }
 
 void get_rankings(sqlite3* db)
@@ -387,10 +396,11 @@ void get_rankings(sqlite3* db)
     std::cout << "Ranking" << std::endl;
 
     //Imprimir los nombres de las columnas
-    for (int i = 0; i < num_rows; i++)
+    for (int i = 0; i < num_cols; i++)
     {
-        std::cout << records[i] << "\t";
+        std::cout << "\t" << records[i];
     }
+    std::cout << std::endl;
 
     for (int i = 0; i < num_rows; i++) {
         std::cout << i + 1 << "\t";
@@ -398,6 +408,7 @@ void get_rankings(sqlite3* db)
             const char* save = records[(i + 1) * num_cols + j];
             std::cout << save << "\t";
         }
+        std::cout << std::endl;
     }
 
     sqlite3_free_table(records);

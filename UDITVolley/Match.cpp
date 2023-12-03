@@ -77,12 +77,13 @@ void Match::to_string()
 
 void Match::check_player(sqlite3* db, std::string _name, bool _player)
 {
-	std::string _option = NULL;
+	std::string _option = "";
 	//If bool true = player 1
+
 
 	while(player_exists(db, _name))
 	{
-		cout << "There is already a Player with the name:" << _name << endl;
+		cout << "There is already a Player with the name: " << _name << endl;
 		cout << "If you want to use that player press Y." << endl << "If you want to use another player Press N" << endl;
 		cout << "Y Or N" << endl;
 		cin >> _option;
@@ -93,10 +94,12 @@ void Match::check_player(sqlite3* db, std::string _name, bool _player)
 			if (_player)
 			{
 				player1 = get_player(db, _name);
+				break;
 			}
 			else
 			{
 				player2 = get_player(db, _name);
+				break;
 			}
 		}
 		else if (_option == "N")
@@ -124,18 +127,20 @@ void Match::check_player(sqlite3* db, std::string _name, bool _player)
 void Match::beginMatch(sqlite3* db)
 {
     string _name1, _name2, _option;
+	system("cls");
     cout << "Tell me the name of the first player" << endl;
     cin >> _name1;
 	cout << endl;
 	check_player(db, _name1, true);
 
-    cout << endl << "Tell me the name of the first player" << endl;
+	system("cls");
+    cout << endl << "Tell me the name of the second player" << endl;
     cin >> _name2;
 	cout << endl;
 	check_player(db, _name2, false);
 
-	insert_player(db, player1);
-	insert_player(db, player2);
+	insert_player(db, player1); //Si ya están no se van a volver a guardar
+	insert_player(db, player2); //Si ya están no se van a volver a guardar
 }
 
 void Match::HandleInput(SDL_Event e)
@@ -296,12 +301,14 @@ void Match::match_main()
 	{
 		printf("Failed to open database");
 	}
-
+	
 	get_table_games(db);
 	get_table_players(db);
 
 	beginMatch(db);
 
+
+	system("cls");
 	//Start up SDL and create window
 	if (!init_match())
 	{
@@ -336,7 +343,7 @@ void Match::match_main()
 				last = now;
 				now = SDL_GetPerformanceCounter();
 				
-				deltaTime = (int)((now - last) / (int)SDL_GetPerformanceFrequency());
+				deltaTime = (float)((now - last) / (float)SDL_GetPerformanceFrequency());
 
 				duration += deltaTime;
 
