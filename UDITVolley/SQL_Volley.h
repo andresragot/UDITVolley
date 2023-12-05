@@ -5,7 +5,7 @@
 #include "Player.h"
 
 int db_get_table(sqlite3* db);
-void get_games();
+int get_games();
 bool insert_games(sqlite3* _db, Player p1, Player p2, int duration);
 bool insert_player(sqlite3* _db, Player p);
 static int callback(void* data, int argc, char** argv, char** azColName);

@@ -35,7 +35,7 @@ public:
     void check_player(sqlite3* db, std::string name, bool _player);
     void beginMatch(sqlite3* db);
     bool init_match();
-    void match_main();
+    void match_main(bool begin);
     void load_match();
     void get_ranks();
     void close();

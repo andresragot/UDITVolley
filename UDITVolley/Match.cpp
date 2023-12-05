@@ -293,7 +293,7 @@ bool Match::init_match()
 	return success;
 }
 
-void Match::match_main()
+void Match::match_main(bool begin)
 {
 	sqlite3* db = open_table();
 
@@ -305,7 +305,10 @@ void Match::match_main()
 	get_table_games(db);
 	get_table_players(db);
 
-	beginMatch(db);
+	if (begin)
+	{
+		beginMatch(db);
+	}
 
 
 	system("cls");
@@ -410,6 +413,8 @@ void Match::load_match()
 	games_played.clear();
 	db_get_table(db);
 	get_games();
+
+
 
 	sqlite3_close(db);
 }

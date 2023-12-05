@@ -73,7 +73,7 @@ int db_get_table(sqlite3* db) {
     return 0;
 }
 
-void get_games()
+int get_games()
 {
     std::cout << "Select Match to load" << std::endl;
 
@@ -84,7 +84,30 @@ void get_games()
         i++;
     }
 
-    //TODO: poder escoger el match
+    bool success = false;
+    int num = 0;
+
+    do {
+
+        if ((std::cin >> num))
+        {
+            if (num > games_played.size() && num < 1)
+            {
+                std::cout << "Invalid number, please try again" << std::endl;
+            }
+            else
+            {
+                success = true;
+            }
+        }
+        else
+        {
+            num = 0;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //Descarta la entrada incorrecta
+        }
+    } while (!success);
+    return num;
 }
 
 

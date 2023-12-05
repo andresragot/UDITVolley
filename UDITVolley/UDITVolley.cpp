@@ -47,16 +47,23 @@ int menu() {
     bool success = false;
 
     do {
-        if (scanf("%i", &num) == 1) {
-            if (num > 6 && num < 1) {
-                printf("Invalid number, please try again");
+        
+        if ((cin >> num))
+        {
+            if (num > 6 && num < 1) 
+            {
+                cout << "Invalid number, please try again" << endl;
             }
-            else {
+            else 
+            {
                 success = true;
             }
         }
-        else {
+        else
+        {
             num = 0;
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); //Descarta la entrada incorrecta
         }
     } while (!success);
     return num;
@@ -65,13 +72,12 @@ int menu() {
 //Function to print the menu in the console
 void pressMenu() {
     system("cls");
-    printf("UDIT VOLLEY\n========\n");
-    printf("1. Begin Match\n");
-    printf("2. Load Match\n");
-    printf("3. Simulate Match\n");
-    printf("4. Match in the web\n");
-    printf("5. Rankings\n");
-    printf("6. Leave\n");
+    cout << "UDIT VOLLEY\n========" << endl;
+    cout << "1. Begin Match" << endl;
+    cout << "2. Load Match" << endl;
+    cout << "3. Match in the web" << endl;
+    cout << "4. Rankings" << endl;
+    cout << "5. Leave" << endl;
 }
 
 //Function with the menu and does the option
@@ -79,7 +85,7 @@ void play() {
 
     int option = menu();
 
-    while (option != 6) {
+    while (option != 5) {
         switch (option) {
         case 1:
             match.match_main();
@@ -91,19 +97,14 @@ void play() {
             _getch();
             break;
         case 3:
-            cout << "The match has been saved" << endl;
+            cout << "Function not developped yet" << endl;
             _getch();
             break;
         case 4:
-            cout << "Function not developped yet" << endl;
-            _getch();
-            break;
-        case 5:
             match.get_ranks();
             _getch();
             break;
-        case 6:
-            cout << "Function not developped yet" << endl;
+        case 5:
             _getch();
             break;
         default:
