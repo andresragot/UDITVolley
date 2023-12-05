@@ -4,9 +4,13 @@
 #include "sqlite3/sqlite3.h"
 #include "Player.h"
 
+
+#define MAX_POINTS							25
+
 int db_get_table(sqlite3* db);
 int get_games();
 bool insert_games(sqlite3* _db, Player p1, Player p2, int duration);
+bool update_game(sqlite3* _db, int _id,Player _p1, Player _p2, int _duration);
 bool insert_player(sqlite3* _db, Player p);
 static int callback(void* data, int argc, char** argv, char** azColName);
 sqlite3* open_table();

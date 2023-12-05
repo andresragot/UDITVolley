@@ -134,7 +134,6 @@
   <ItemGroup>
     <ClInclude Include="Ball.h" />
     <ClInclude Include="LTexture.h" />
-    <ClInclude Include="LTimer.h" />
     <ClInclude Include="Match.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="SQL_Volley.h" />
@@ -142,7 +141,6 @@
   <ItemGroup>
     <ClCompile Include="Ball.cpp" />
     <ClCompile Include="LTexture.cpp" />
-    <ClCompile Include="LTimer.cpp" />
     <ClCompile Include="Match.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="SQL_Volley.cpp" />

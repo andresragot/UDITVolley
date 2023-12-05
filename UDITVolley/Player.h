@@ -35,7 +35,7 @@ public:
     Player(std::string n, int i) : name(n), id(i) { pCollider.h = PLAYER_HEIGHT; pCollider.w = PLAYER_WIDTH; mVelX = 0; mVelY = 0; if (id % 2) { pCollider.x = 100; pCollider.y = 280; } else { pCollider.x = 400; pCollider.y = 280; } }
 
     //Takes key presses and adjusts the Ball's velocity
-	void handleEvent(SDL_Event& e);
+	void handle_event(SDL_Event& e);
 
 	//Moves the Ball
 	void move(SDL_Rect& wall);
@@ -43,10 +43,9 @@ public:
 	//Shows the Ball on the screen
 	void render(LTexture& gBallTexture, SDL_Renderer* gRenderer);
 
-    bool checkCollision(SDL_Rect a, SDL_Rect b);
+    // Viste que te tengo los nombres como te gustan
+    bool check_collision(SDL_Rect a, SDL_Rect b);
     
     void update();
-    //    void Move();
-    //    void Jump();
 };
 

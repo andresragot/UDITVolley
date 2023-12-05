@@ -19,29 +19,29 @@ public:
 	~LTexture();
 
 	//Loads image at specified path
-	bool loadFromFile(std::string path, SDL_Renderer* gRenderer);
+	bool load_from_file(std::string path, SDL_Renderer* gRenderer);
 
     //Creates image from font string
-    bool loadFromRendererText(std::string textureText, SDL_Color textColor, TTF_Font* gFont, SDL_Renderer* gRenderer);
+    bool load_from_renderer_text(std::string textureText, SDL_Color textColor, TTF_Font* gFont, SDL_Renderer* gRenderer);
 
 	//Deallocates texture
 	void free();
 
 	//Set color modulation
-	void setColor(Uint8 red, Uint8 green, Uint8 blue);
+	void set_color(Uint8 red, Uint8 green, Uint8 blue);
 
 	//Set blending
-	void setBlendMode(SDL_BlendMode blending);
+	void set_blend_mode(SDL_BlendMode blending);
 
 	//Set alpha modulation
-	void setAlpha(Uint8 alpha);
+	void set_alpha(Uint8 alpha);
 
 	//Renders texture at given point
 	void render(SDL_Renderer* gRenderer, int x, int y, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
 
 	//Gets image dimensions
-	int getWidth();
-	int getHeight();
+	int get_width();
+	int get_height();
 
 private:
 	//The actual hardware texture

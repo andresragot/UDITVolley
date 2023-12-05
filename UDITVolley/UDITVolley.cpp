@@ -2,21 +2,9 @@
 //
 #pragma warning(disable : 4996)
 
-#include <iostream>
-#include <stdlib.h>     /* srand, rand */
-#include <conio.h>
-#include <stdio.h>
-
-//Using SDL, SDL_image
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-
 #include "Match.h"
-#include "Player.h"
-#include "LTexture.h"
-#include "Ball.h"
-#include "SQL_Volley.h"
+#include <conio.h>
+
 
 using namespace std;
 
@@ -29,13 +17,13 @@ void play();
 Match match;
 
 
-// Vamos a hacer el metodo para guardar una partida DONE
-// EXTRA: leer sobre sdl, descargar y aprender a compilar y vamos a pintar un rectangulo, una pelota roja y una verde
-// EXTRA PLUS: hacer que salte el jugador y que se mueva y que la pelota tenga logica
+/* 
+    Buenos días Javi, bienvenido a mi querido código 
+    Por favor, no me funes.
+*/
 int main(int argc, char* args[])
 {
     play();
-    //SDLMain();
     return 0;
 }
 
@@ -88,7 +76,7 @@ void play() {
     while (option != 5) {
         switch (option) {
         case 1:
-            match.match_main();
+            match.match_main(true);
             break;
         case 2:
             //db_get_table();

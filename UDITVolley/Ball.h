@@ -21,7 +21,7 @@ private:
 
 public:	
 
-	Circle& getCollider();
+	Circle& get_collider();
 
 	//The dimensions of the Ball
 	static const int RADIUS = 20;
@@ -40,7 +40,8 @@ public:
 	//Shows the Ball on the screen
 	void render(LTexture& gBallTexture, SDL_Renderer* gRenderer);
 
-	bool checkCollision(Circle& a, SDL_Rect& b);
-	double distanceSquared(int x1, int y1, int x2, int y2);
+	// De verdad me vas a leer todo para funarme? No me funes
+	bool check_collision(Circle& a, SDL_Rect& b);
+	double distance_squared(int x1, int y1, int x2, int y2);
 };
 

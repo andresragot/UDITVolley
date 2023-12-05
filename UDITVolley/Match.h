@@ -11,12 +11,13 @@ class Match
 {
 public:
 
+    int id = 0; //Variable solamente util verdaderamente a la hora de actualizar SQL
     Player player1 = Player("DEFAULT", 1);
     Player player2 = Player("DEFAULT", 2);
     Ball ball;
     SDL_Rect wall;
     unsigned int points[2] = { 0, 0 }; //TODO: asegurarnos de si debe estar aquí
-    int duration = 0; // En segundos
+    double duration = 0; // En segundos
     FILE* fp = NULL;
 
 public:
@@ -32,19 +33,20 @@ public:
     bool read_from_file(const char* _filename);
     void to_string();
 
-    void check_player(sqlite3* db, std::string name, bool _player);
-    void beginMatch(sqlite3* db);
+    bool check_player(sqlite3* db, std::string name, bool _player);
+    void begin_match(sqlite3* db);
     bool init_match();
     void match_main(bool begin);
     void load_match();
+    void resume_match(int _id);
     void get_ranks();
     void close();
 
-    void HandleInput(SDL_Event e);
-    void Update();
+    void handle_input(SDL_Event e);
+    void update();
 
-    bool loadMedia();
-    bool loadPoints();
+    bool load_media();
+    bool load_points();
 
     void clear();
     void render();

@@ -6,22 +6,24 @@
 */
 std::vector<Game> games_played;
 
-int db_get_table(sqlite3* db) {
+/*sql = "
+    SELECT p.id, u.id as user_id, p.points, u.name
+    FROM partidos p
+        LEFT OUTER JOIN users u ON p.user_id = u.id
+    ORDER BY p.points DESC
+    ";*/
+
+
+int db_get_table(sqlite3* db) 
+{
 
     if (db == nullptr)
     {
-        printf("Pointer is null");
+        std::cout << "Pointer is null" << std::endl;
         return 1;
     }
 
-    const char* sql = "SELECT * FROM games WHERE points_player_1 < 25 AND points_player_2 < 25;";
-
-    /*sql = "
-        SELECT p.id, u.id as user_id, p.points, u.name
-        FROM partidos p
-            LEFT OUTER JOIN users u ON p.user_id = u.id
-        ORDER BY p.points DESC
-        ";*/
+    std::string sql = "SELECT * FROM games WHERE points_player_1 < " + std::to_string(MAX_POINTS) + " AND points_player_2 < " + std::to_string(MAX_POINTS) + ";";
 
     int num_rows = 0;
     int num_cols = 0;
@@ -29,20 +31,24 @@ int db_get_table(sqlite3* db) {
 
     char** records = NULL;
 
-    int res = sqlite3_get_table(db, sql, &records, &num_rows, &num_cols, &errMsg);
+    int res = sqlite3_get_table(db, sql.c_str(), &records, &num_rows, &num_cols, &errMsg);
 
-    if (res != SQLITE_OK) {
+    if (res != SQLITE_OK) 
+    {
         sqlite3_free(errMsg);
         return res;
     }
 
 
-    for (int i = 0; i < num_rows; i++) {
+    for (int i = 0; i < num_rows; i++) 
+    {
         Game game;
-        for (int j = 0; j < num_cols; j++) {
+        for (int j = 0; j < num_cols; j++) 
+        {
             const char* key = records[j];
             const char* save = records[(i + 1) * num_cols + j];
-            if (strcmp(key, "id") == 0) {
+            if (strcmp(key, "id") == 0)
+            {
                 game.id = std::stoi(save);
             }
             else if (strcmp(key, "name_player_1") == 0)
@@ -80,18 +86,18 @@ int get_games()
     int i = 1;
     for (const auto& val : games_played)
     {
-        std::cout << i << " " << val.name_player_1 << ": " << val.points_player_1 << " VS " << val.name_player_2 << ": " << val.points_player_2 << " duration: " << val.duration << std::endl;
+        std::cout << i << " " << val.name_player_1 << ": " << val.points_player_1 << "\t VS " << val.name_player_2 << ": " << val.points_player_2 << "\tduration: " << val.duration << std::endl;
         i++;
     }
 
     bool success = false;
     int num = 0;
 
-    do {
-
+    do 
+    {
         if ((std::cin >> num))
         {
-            if (num > games_played.size() && num < 1)
+            if (num > games_played.size() || num < 1)
             {
                 std::cout << "Invalid number, please try again" << std::endl;
             }
@@ -105,8 +111,10 @@ int get_games()
             num = 0;
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //Descarta la entrada incorrecta
+            std::cout << "Invalid option, please write a number from 1 to " << games_played.size() << std::endl;
         }
     } while (!success);
+
     return num;
 }
 
@@ -120,9 +128,9 @@ bool insert_games(sqlite3* _db, Player _p1, Player _p2, int _duration)
 
     sqlite3_stmt* stmt = NULL;
 
-    const char* sql = "INSERT INTO games (name_player_1, name_player_2, points_player_1, points_player_2, duration) VALUES (?, ?, ?, ?, ?)";
+    std::string sql = "INSERT INTO games (name_player_1, name_player_2, points_player_1, points_player_2, duration) VALUES (?, ?, ?, ?, ?)";
 
-    if(sqlite3_prepare_v2(_db, sql, -1, &stmt, NULL) == SQLITE_OK)
+    if(sqlite3_prepare_v2(_db, sql.c_str(), -1, &stmt, NULL) == SQLITE_OK)
     {
         sqlite3_bind_text(stmt, 1, _p1.name.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt, 2, _p2.name.c_str(), -1, SQLITE_TRANSIENT);
@@ -140,7 +148,7 @@ bool insert_games(sqlite3* _db, Player _p1, Player _p2, int _duration)
 
         if (result != SQLITE_DONE)
         {
-            printf("Error inserting game");
+            std::cout << "Error inserting game" << std::endl;
             return false;
         }
 
@@ -148,9 +156,51 @@ bool insert_games(sqlite3* _db, Player _p1, Player _p2, int _duration)
     }
     else 
     {
-        printf("Error declaring SQL");
+        std::cout << "Error declaring SQL" << std::endl;
         return false;
     }
+}
+
+bool update_game(sqlite3* _db, int _id, Player _p1, Player _p2, int _duration)
+{
+    if (_db == nullptr)
+    {
+        std::cout << "Pointer to database is null" << std::endl;
+        return false;
+    }
+
+    sqlite3_stmt* stmt;
+
+    std::string sql = "UPDATE games SET points_player_1 = ?, points_player_2 = ?, duration = ? WHERE id = ?";
+
+    if (sqlite3_prepare_v2(_db, sql.c_str(), -1, &stmt, 0) == SQLITE_OK)
+    {
+        sqlite3_bind_int(stmt, 1, _p1.points);
+        sqlite3_bind_int(stmt, 2, _p2.points);
+        sqlite3_bind_int(stmt, 3, _duration);
+        sqlite3_bind_int(stmt, 4, _id);
+
+        int result = sqlite3_step(stmt);
+
+        sqlite3_clear_bindings(stmt);
+        sqlite3_reset(stmt);
+
+        sqlite3_finalize(stmt);
+
+        if (result != SQLITE_DONE)
+        {
+            std::cout << "Error updating match" << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+    else
+    {
+        std::cout << "Error preparing declaration" << std::endl;
+    }
+
+    return false;
 }
 
 bool insert_player(sqlite3* _db, Player _p)
@@ -162,9 +212,9 @@ bool insert_player(sqlite3* _db, Player _p)
 
     sqlite3_stmt* stmt = NULL;
 
-    const char* sql = "INSERT INTO players(name, games, wins) VALUES (?, ?, ?)";
+    std::string sql = "INSERT INTO players(name, games, wins) VALUES (?, ?, ?)";
 
-    if (sqlite3_prepare_v2(_db, sql, -1, &stmt, NULL) == SQLITE_OK)
+    if (sqlite3_prepare_v2(_db, sql.c_str(), -1, &stmt, NULL) == SQLITE_OK)
     {
         sqlite3_bind_text(stmt, 1, _p.name.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_int(stmt, 2, _p.games);
@@ -179,7 +229,7 @@ bool insert_player(sqlite3* _db, Player _p)
 
         if (result != SQLITE_DONE)
         {
-            printf("Error inserting player");
+            std::cout << "Error inserting player" << std::endl;
             return false;
         }
 
@@ -187,7 +237,7 @@ bool insert_player(sqlite3* _db, Player _p)
     }
     else
     {
-        printf("Error declaring SQL");
+        std::cout << "Error declaring SQL" << std::endl;
         return false;
     }
 }
@@ -196,7 +246,8 @@ int callback(void* data, int argc, char** argv, char** azColName)
 {
     int i;
 
-    for (i = 0; i < argc; i++) {
+    for (i = 0; i < argc; i++) 
+    {
         printf("%s = %s", azColName[i], argv[i] ? argv[i] : NULL);
     }
 
@@ -219,7 +270,8 @@ sqlite3* open_table()
     // Save the result of opening the file
     rc = sqlite3_open("volley_games.db", &db);
 
-    if (rc) {
+    if (rc) 
+    {
         // Show an error message
         std::cout << "DB Error: " << sqlite3_errmsg(db) << std::endl;
         // Close the connection
@@ -235,7 +287,7 @@ void get_table_games(sqlite3* db)
 {
     if (db == nullptr)
     {
-        printf("Pointer to database is null");
+        std::cout << "Pointer to database is null" << std::endl;
         return;
     }
 
@@ -265,7 +317,7 @@ void get_table_players(sqlite3* db)
 {
     if (db == nullptr)
     {
-        printf("Pointer to database is null");
+        std::cout << "Pointer to database is null" << std::endl;
         return;
     }
 
@@ -292,7 +344,7 @@ bool player_exists(sqlite3* db, std::string playerName)
 {
     if (db == nullptr)
     {
-        printf("Pointer to database is null");
+        std::cout << "Pointer to database is null" << std::endl;
         return false;
     }
 
@@ -308,8 +360,6 @@ bool player_exists(sqlite3* db, std::string playerName)
 
         if (result == SQLITE_ROW)
         {
-            //DEBUG
-            //std::cout << "Hay player" << std::endl;
             return true;
         }
     }
@@ -322,14 +372,11 @@ Player get_player(sqlite3* db, std::string playerName)
 {
     if (db == nullptr)
     {
-        printf("Pointer is null");
+        std::cout << "Pointer is null" << std::endl;
         return Player();
     }
 
     Player temp;
-
-    //Debug
-    //std::cout << "Get player" << std::endl;
 
     sqlite3_stmt* stmt;
     std::string sql = "SELECT * FROM players WHERE name = ?";
@@ -340,13 +387,8 @@ Player get_player(sqlite3* db, std::string playerName)
 
         int result = sqlite3_step(stmt);
 
-        // DEBUG
-        //std::cout << "Entro en ok" << std::endl;
-
         if (result == SQLITE_ROW)
         {
-            // DEBUG
-            //std::cout << "Entro en row" << std::endl;
 
             temp.name = std::string(reinterpret_cast <const char*> (sqlite3_column_text(stmt, 0)));
             temp.games = sqlite3_column_int(stmt, 1);
@@ -366,7 +408,7 @@ void update_player(sqlite3* _db, Player _p)
 {
     if (_db == nullptr)
     {
-        printf("Pointer to database is null");
+        std::cout << "Pointer to database is null" << std::endl;
         return;
     }
 
@@ -411,7 +453,8 @@ void get_rankings(sqlite3* db)
 
     int res = sqlite3_get_table(db, sql.c_str(), &records, &num_rows, &num_cols, &errMsg);
 
-    if (res != SQLITE_OK) {
+    if (res != SQLITE_OK)
+    {
         sqlite3_free(errMsg);
         return;
     }
@@ -425,9 +468,11 @@ void get_rankings(sqlite3* db)
     }
     std::cout << std::endl;
 
-    for (int i = 0; i < num_rows; i++) {
+    for (int i = 0; i < num_rows; i++) 
+    {
         std::cout << i + 1 << "\t";
-        for (int j = 0; j < num_cols; j++) {
+        for (int j = 0; j < num_cols; j++) 
+        {
             const char* save = records[(i + 1) * num_cols + j];
             std::cout << save << "\t";
         }
