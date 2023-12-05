@@ -26,11 +26,7 @@ public:
     Match();
     Match(std::string nameOne, int idOne, std::string nameTwo, int idTwo) {}
     bool save_game(sqlite3* db);
-    //void write();
-    bool file_exists(const char* _filename);
-    uint32_t file_size(const char* _filename);
-    bool write_to_file(const char* _filename, const char* _line);
-    bool read_from_file(const char* _filename);
+
     void to_string();
 
     bool check_player(sqlite3* db, std::string name, bool _player);
@@ -38,7 +34,6 @@ public:
     bool init_match();
     void match_main(bool begin);
     void load_match();
-    void resume_match(int _id);
     void get_ranks();
     void close();
 

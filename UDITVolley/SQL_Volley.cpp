@@ -280,6 +280,9 @@ sqlite3* open_table()
         return nullptr;
     }
 
+    get_table_games(db);
+    get_table_players(db);
+
     return db;
 }
 

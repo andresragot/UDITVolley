@@ -26,48 +26,6 @@ Match::Match()
 	wall.h = 200;
 }
 
-bool Match::file_exists(const char* _filename) {
-	FILE* fp = fopen(_filename, "r");
-
-	if (fp == NULL) {
-		//Creates file
-		fp = fopen(_filename, "a");
-		fclose(fp);
-		return false;
-	}
-
-	fclose(fp);
-
-	return true;
-}
-
-uint32_t Match::file_size(const char* _filename) {
-	struct stat st;
-	if (stat(_filename, &st) == 0) {
-		return st.st_size;
-	}
-
-	return 0;
-}
-
-bool Match::write_to_file(const char* _filename, const char* _line) {
-	FILE* fp = NULL;
-
-	if (file_exists(_filename)) {
-		fp = fopen(_filename, "w");
-		fputs(_line, fp);
-		fclose(fp);
-		return true;
-	}
-
-	return false;
-}
-
-bool Match::read_from_file(const char* _filename) 
-{
-    return false;
-}
-
 void Match::to_string() 
 {
 	cout << "Player 1 name : " << player1.name << " id: " << player1.id << " points: " << points[0] << endl;
@@ -144,8 +102,8 @@ void Match::begin_match(sqlite3* db)
 
 void Match::handle_input(SDL_Event e)
 {
-	player1.handleEvent(e);
-	player2.handleEvent(e);
+	player1.handle_event(e);
+	player2.handle_event(e);
 }
 
 void Match::update()
@@ -190,15 +148,15 @@ bool Match::load_media()
 	//Open the font 
 	gFont = TTF_OpenFont("font/Wigglye.ttf", 20);
 	if (gFont == NULL) {
-		printf("Failed to load Wigglye font! SDL_ttf Error: %s\n", TTF_GetError());
+		cout << "Failed to load Wigglye font! SDL_ttf Error: " << TTF_GetError() << endl;
 		success = false;
 	}
 	else {
 		//Render text
 		SDL_Color textColor = { 0,0,0 };
-		if (!(gTextTextureOne.loadFromRendererText("0", textColor, gFont, gRenderer) && gTextTextureTwo.loadFromRendererText("0", textColor, gFont, gRenderer) && gTextTextureTimer.loadFromRendererText("0", textColor, gFont, gRenderer))) 
+		if (!(gTextTextureOne.load_from_renderer_text("0", textColor, gFont, gRenderer) && gTextTextureTwo.load_from_renderer_text("0", textColor, gFont, gRenderer) && gTextTextureTimer.load_from_renderer_text("0", textColor, gFont, gRenderer))) 
 		{
-			printf("Failed to render text texture!\n");
+			cout << "Failed to render text texture!" << endl;
 			success = false;
 		}
 	}
@@ -250,7 +208,7 @@ bool Match::init_match()
 	//Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO) < 0)
 	{
-		printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
+		cout << "SDL could not initialize! SDL Error: " << SDL_GetError() << endl;
 		success = false;
 	}
 	else
@@ -258,13 +216,13 @@ bool Match::init_match()
 		//Set texture filtering to linear
 		if (!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
 		{
-			printf("Warning: Linear texture filtering not enabled!");
+			cout << "Warning: Linear texture filtering not enabled!" << endl;
 		}
 		//Create window
-		gWindow = SDL_CreateWindow("SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+		gWindow = SDL_CreateWindow("UDITVolley", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 		if (gWindow == NULL)
 		{
-			printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
+			cout << "Window could not be created! SDL Error: " << SDL_GetError() << endl;
 			success = false;
 		}
 		else
@@ -272,22 +230,23 @@ bool Match::init_match()
 			//Create vsynced renderer for window
 			gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 			if (gRenderer == NULL) {
-				printf("Renderer could not be created! SDL Error: %s\n", SDL_GetError());
+				cout << "Renderer could not be created! SDL Error: " << SDL_GetError() << endl;
 				success = false;
 			}
-			else {
+			else 
+			{
 				//Initialize renderer color
 				SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 				//Initialize PNG loading
 				int imgFlags = IMG_INIT_PNG;
 				if (!(IMG_Init(imgFlags) & imgFlags))
 				{
-					printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+					cout << "SDL_image could not initialize! SDL_image Error: " << IMG_GetError() << endl;
 					success = false;
 				}
 				//Initialize SDL_ttf
 				if (TTF_Init() == -1) {
-					printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+					cout << "SDL_ttf could not initialize!SDL_ttf Error : " << TTF_GetError() << endl;
 					success = false;
 				}
 			}
@@ -303,11 +262,8 @@ void Match::match_main(bool begin)
 
 	if (db == nullptr)
 	{
-		printf("Failed to open database");
+		cout << "Failed to open database" << endl;
 	}
-	
-	//get_table_games(db);
-	//get_table_players(db);
 
 	if (begin) // If true begin game, if false resume game.
 	{
@@ -319,14 +275,14 @@ void Match::match_main(bool begin)
 	//Start up SDL and create window
 	if (!init_match())
 	{
-		printf("Failed to initialize!\n");
+		cout << "Failed to initialize!" << endl;
 	}
 	else
 	{
 		//Load media
 		if (!load_media())
 		{
-			printf("Failed to load media!\n");
+			cout << "Failed to load media!\n" << endl;
 		}
 		else
 		{
@@ -387,7 +343,7 @@ void Match::match_main(bool begin)
 
 				if (!load_points())
 				{
-					printf("Failed to load points!\n");
+					cout << "Failed to load points!" << endl;
 				}
 
 
@@ -454,11 +410,6 @@ void Match::load_match()
 	sqlite3_close(db);
 
 	match_main(false);
-}
-
-void Match::resume_match(int _id)
-{
-	
 }
 
 void Match::get_ranks()
