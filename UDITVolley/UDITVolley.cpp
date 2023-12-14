@@ -27,14 +27,16 @@ int main(int argc, char* args[])
     return 0;
 }
 
-//Function to get the desired option
-int menu() {
+// Function to get the desired option
+int menu() 
+{
     pressMenu();
 
     int num = 0;
     bool success = false;
 
-    do {
+    do 
+    {
         
         if ((cin >> num))
         {
@@ -58,7 +60,8 @@ int menu() {
 }
 
 //Function to print the menu in the console
-void pressMenu() {
+void pressMenu() 
+{
     system("cls");
     cout << "UDIT VOLLEY\n========" << endl;
     cout << "1. Begin Match" << endl;
@@ -69,52 +72,46 @@ void pressMenu() {
 }
 
 //Function with the menu and does the option
-void play() {
+void play() 
+{
 
     int option = menu();
 
-    while (option != 5) {
-        switch (option) {
+    while (option != 5) 
+    {
+        switch (option) 
+        {
         case 1:
             match.match_main(true);
             break;
+        
         case 2:
             //db_get_table();
             match.load_match();
             cout << "The match has been load" << endl;
             _getch();
             break;
+        
         case 3:
             cout << "Function not developped yet" << endl;
             _getch();
             break;
+        
         case 4:
             match.get_ranks();
             _getch();
             break;
+        
         case 5:
             _getch();
             break;
+        
         default:
             cout << "Function not developped yet" << endl;
             _getch();
             break;
+        
         }
         option = menu();
     }
 }
-
-//Clase jugador y pelota
-//Atrivutos y metodos
-
-// vamos a guardar los datos de guardar los ficheros texto
-
-// Ejecutar programa: Ctrl + F5 o menú Depurar > Iniciar sin depurar
-// Depurar programa: F5 o menú Depurar > Iniciar depuración
-
-// Sugerencias para primeros pasos: 1. Use la ventana del Explorador de soluciones para agregar y administrar archivos
-//   2. Use la ventana de Team Explorer para conectar con el control de código fuente
-//   3. Use la ventana de salida para ver la salida de compilación y otros mensajes
-//   4. Use la ventana Lista de errores para ver los errores
-//   5. Vaya a Proyecto > Agregar nuevo elemento para crear nuevos archivos de código, o a Proyecto > Agregar elemento existente para agregar archivos de código existentes al proyecto
-//   6. En el futuro, para volver a abrir este proyecto, vaya a Archivo > Abrir > Proyecto y seleccione el archivo .sln

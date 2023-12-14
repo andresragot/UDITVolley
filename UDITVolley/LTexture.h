@@ -12,42 +12,42 @@
 class LTexture
 {
 public:
-	//Initializes variables
+	// Initializes variables
 	LTexture();
 
-	//Deallocates memory
+	// Deallocates memory
 	~LTexture();
 
-	//Loads image at specified path
+	// Loads image at specified path
 	bool load_from_file(std::string path, SDL_Renderer* gRenderer);
 
-    //Creates image from font string
+    // Creates image from font string
     bool load_from_renderer_text(std::string textureText, SDL_Color textColor, TTF_Font* gFont, SDL_Renderer* gRenderer);
 
-	//Deallocates texture
+	// Deallocates texture
 	void free();
 
-	//Set color modulation
+	// Set color modulation
 	void set_color(Uint8 red, Uint8 green, Uint8 blue);
 
-	//Set blending
+	// Set blending
 	void set_blend_mode(SDL_BlendMode blending);
 
-	//Set alpha modulation
+	// Set alpha modulation
 	void set_alpha(Uint8 alpha);
 
-	//Renders texture at given point
+	// Renders texture at given point
 	void render(SDL_Renderer* gRenderer, int x, int y, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE);
 
-	//Gets image dimensions
+	// Gets image dimensions
 	int get_width();
 	int get_height();
 
 private:
-	//The actual hardware texture
+	// The actual hardware texture
 	SDL_Texture* mTexture;
 
-	//Image dimensions
+	// Image dimensions
 	int mWidth;
 	int mHeight;
 

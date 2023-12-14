@@ -29,18 +29,18 @@ public:
     SDL_Rect pCollider;
 
 public:
-    Player& operator=(const Player&);         //Asignación de copia
+    Player& operator=(const Player&);         // Asignación de copia
 
     Player();
     Player(std::string n, int i) : name(n), id(i) { pCollider.h = PLAYER_HEIGHT; pCollider.w = PLAYER_WIDTH; mVelX = 0; mVelY = 0; if (id % 2) { pCollider.x = 100; pCollider.y = 280; } else { pCollider.x = 400; pCollider.y = 280; } }
 
-    //Takes key presses and adjusts the Ball's velocity
-	void handle_event(SDL_Event& e);
+    // Takes key presses and adjusts the Ball's velocity
+	void handle_event(SDL_Event& event_handler);
 
-	//Moves the Ball
+	// Moves the Ball
 	void move(SDL_Rect& wall);
 
-	//Shows the Ball on the screen
+	// Shows the Ball on the screen
 	void render(LTexture& gBallTexture, SDL_Renderer* gRenderer);
 
     // Viste que te tengo los nombres como te gustan

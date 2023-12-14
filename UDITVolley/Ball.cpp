@@ -1,5 +1,9 @@
 #include "Ball.h"
 
+/*
+    FUNCTIONS
+*/
+
 Ball::Circle& Ball::get_collider()
 {
     return ballCollider;

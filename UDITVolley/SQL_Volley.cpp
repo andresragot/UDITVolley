@@ -2,17 +2,13 @@
 #include <conio.h>
 
 /*
-    Global variables
+    GLOBAL VARS
 */
 std::vector<Game> games_played;
 
-/*sql = "
-    SELECT p.id, u.id as user_id, p.points, u.name
-    FROM partidos p
-        LEFT OUTER JOIN users u ON p.user_id = u.id
-    ORDER BY p.points DESC
-    ";*/
-
+/*
+    FUNCTIONS
+*/
 
 int db_get_table(sqlite3* db) 
 {
@@ -266,7 +262,6 @@ sqlite3* open_table()
 
     sqlite3_initialize();
 
-    //TODO : Cambiar el open
     // Save the result of opening the file
     rc = sqlite3_open("volley_games.db", &db);
 
@@ -486,5 +481,3 @@ void get_rankings(sqlite3* db)
     return;
 
 }
-
-

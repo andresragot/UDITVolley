@@ -11,18 +11,17 @@ class Match
 {
 public:
 
-    int id = 0; //Variable solamente util verdaderamente a la hora de actualizar SQL
+    int id = 0; // Variable solamente util verdaderamente a la hora de actualizar SQL
     Player player1 = Player("DEFAULT", 1);
     Player player2 = Player("DEFAULT", 2);
     Ball ball;
     SDL_Rect wall;
-    unsigned int points[2] = { 0, 0 }; //TODO: asegurarnos de si debe estar aquí
     double duration = 0; // En segundos
     FILE* fp = NULL;
 
 public:
 
-    Match& operator=(const Match&);         //Asignación de copia
+    Match& operator=(const Match&);         // Asignación de copia
     Match();
     Match(std::string nameOne, int idOne, std::string nameTwo, int idTwo) {}
     bool save_game(sqlite3* db);
@@ -37,7 +36,7 @@ public:
     void get_ranks();
     void close();
 
-    void handle_input(SDL_Event e);
+    void handle_input(SDL_Event event_handler);
     void update();
 
     bool load_media();
@@ -50,16 +49,16 @@ public:
 
 private:
 
-    //The window we'll be rendering to
+    // The window we'll be rendering to
     SDL_Window* gWindow = NULL;
 
-    //The window renderer
+    // The window renderer
     SDL_Renderer* gRenderer = NULL;
 
-    //Globally used fonts
+    // Globally used fonts
     TTF_Font* gFont = NULL;
 
-    //Scene textures
+    // Scene textures
     LTexture gBallTexture, gPlayerOneTexture, gPlayerTwoTexture, gTextTextureOne, gTextTextureTwo, gTextTextureTimer;
 };
 

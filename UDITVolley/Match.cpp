@@ -6,11 +6,16 @@ using namespace std;
 
 
 /*
-	Extern variables
+	EXTERN VARS
 */
 extern std::vector<Game> games_played;
 
-Match& Match::operator=(const Match& c) {
+/*
+	FUNCTIONS
+*/
+
+Match& Match::operator=(const Match& c) 
+{
 	player1.name = c.player1.name;
 	player1.id = c.player1.id;
 	player2.name = c.player2.name;
@@ -28,8 +33,8 @@ Match::Match()
 
 void Match::to_string() 
 {
-	cout << "Player 1 name : " << player1.name << " id: " << player1.id << " points: " << points[0] << endl;
-	cout << "Player 2 name : " << player2.name << " id: " << player2.id << " points: " << points[1] << endl;
+	cout << "Player 1 name : " << player1.name << " id: " << player1.id << " points: " << player1.points << endl;
+	cout << "Player 2 name : " << player2.name << " id: " << player2.id << " points: " << player2.points << endl;
 	cout << "Duration: " << duration << endl;
 }
 
@@ -96,8 +101,8 @@ void Match::begin_match(sqlite3* db)
 		player2 = Player(_name2, 2);
 	}
 
-	insert_player(db, player1); //Si ya están no se van a volver a guardar
-	insert_player(db, player2); //Si ya están no se van a volver a guardar
+	insert_player(db, player1); // If they already are, they do not save
+	insert_player(db, player2); // If they already are, they do not save
 }
 
 void Match::handle_input(SDL_Event e)
@@ -121,14 +126,10 @@ bool Match::load_points()
 	char timer[20];
 	
 	sprintf(timer, "%d:%02d", (int)(duration / 60), (static_cast<int>(duration)%60));
-	//cout << duration << endl;
-	//cout << timer << endl;
-	//Render text
-
-
 
 	SDL_Color textColor = { 0,0,0 };
-	if (!(gTextTextureOne.load_from_renderer_text(std::to_string(player1.points), textColor, gFont, gRenderer) && gTextTextureTwo.load_from_renderer_text(std::to_string(player2.points), textColor, gFont, gRenderer) && gTextTextureTimer.load_from_renderer_text(timer, textColor, gFont, gRenderer))) {
+	if (!(gTextTextureOne.load_from_renderer_text(std::to_string(player1.points), textColor, gFont, gRenderer) && gTextTextureTwo.load_from_renderer_text(std::to_string(player2.points), textColor, gFont, gRenderer) && gTextTextureTimer.load_from_renderer_text(timer, textColor, gFont, gRenderer))) 
+	{
 		cout << "Failed to render text texture!" << endl;
 		success = false;
 	}
@@ -137,22 +138,25 @@ bool Match::load_points()
 
 bool Match::load_media()
 {
-	//Loading success flag
+	// Loading success flag
 	bool success = true;
 
-	if (!(gBallTexture.load_from_file("dotx2.bmp", gRenderer) && gPlayerOneTexture.load_from_file("Dante.png", gRenderer) && gPlayerTwoTexture.load_from_file("Virgilio.png", gRenderer))) {
+	if (!(gBallTexture.load_from_file("dotx2.bmp", gRenderer) && gPlayerOneTexture.load_from_file("Dante.png", gRenderer) && gPlayerTwoTexture.load_from_file("Virgilio.png", gRenderer))) 
+	{
 		cout << "Failed to load ball texture!" << endl;
 		success = false;
 	}
 
-	//Open the font 
+	// Open the font 
 	gFont = TTF_OpenFont("font/Wigglye.ttf", 20);
-	if (gFont == NULL) {
+	if (gFont == NULL) 
+	{
 		cout << "Failed to load Wigglye font! SDL_ttf Error: " << TTF_GetError() << endl;
 		success = false;
 	}
-	else {
-		//Render text
+	else 
+	{
+		// Render text
 		SDL_Color textColor = { 0,0,0 };
 		if (!(gTextTextureOne.load_from_renderer_text("0", textColor, gFont, gRenderer) && gTextTextureTwo.load_from_renderer_text("0", textColor, gFont, gRenderer) && gTextTextureTimer.load_from_renderer_text("0", textColor, gFont, gRenderer))) 
 		{
@@ -229,7 +233,8 @@ bool Match::init_match()
 		{
 			//Create vsynced renderer for window
 			gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-			if (gRenderer == NULL) {
+			if (gRenderer == NULL) 
+			{
 				cout << "Renderer could not be created! SDL Error: " << SDL_GetError() << endl;
 				success = false;
 			}
@@ -245,7 +250,8 @@ bool Match::init_match()
 					success = false;
 				}
 				//Initialize SDL_ttf
-				if (TTF_Init() == -1) {
+				if (TTF_Init() == -1) 
+				{
 					cout << "SDL_ttf could not initialize!SDL_ttf Error : " << TTF_GetError() << endl;
 					success = false;
 				}
@@ -279,7 +285,7 @@ void Match::match_main(bool begin)
 	}
 	else
 	{
-		//Load media
+		// Load media
 		if (!load_media())
 		{
 			cout << "Failed to load media!\n" << endl;
@@ -291,11 +297,11 @@ void Match::match_main(bool begin)
 			Uint64 last = 0;
 			double deltaTime = 0;
 
-			//Main loop flag
+			// Main loop flag
 			bool quit = false;
 
-			//Event handler
-			SDL_Event e;
+			// Event handler
+			SDL_Event event_handler;
 
 			if (begin)
 			{
@@ -303,7 +309,7 @@ void Match::match_main(bool begin)
 				player2.games++;
 			}
 
-			//While application is running
+			// While application is running
 			while (!quit)
 			{
 				last = now;
@@ -313,11 +319,11 @@ void Match::match_main(bool begin)
 
 				duration += deltaTime;
 
-				//Handle events on queue
-				while (SDL_PollEvent(&e) != 0)
+				// Handle events on queue
+				while (SDL_PollEvent(&event_handler) != 0)
 				{
-					//User requests quit
-					if (e.type == SDL_QUIT)
+					// User requests quit
+					if (event_handler.type == SDL_QUIT)
 					{
 						if (begin)
 						{
@@ -331,14 +337,14 @@ void Match::match_main(bool begin)
 						update_player(db, player2);
 						quit = true;
 					}
-					//Handle input
-					handle_input(e);
+					// Handle input
+					handle_input(event_handler);
 				}
 
-				//Move the ball and check collision
+				// Move the ball and check collision
 				update();
 
-				//Clear Screen
+				// Clear Screen
 				clear();
 
 				if (!load_points())
@@ -347,11 +353,11 @@ void Match::match_main(bool begin)
 				}
 
 
-				//Render match
+				// Render match
 				render();
 
-				if (win_condition()) {
-					//Meter base de datos acá
+				if (win_condition()) 
+				{
 					if (player1.points >= MAX_POINTS)
 					{
 						player1.wins++;
@@ -383,7 +389,7 @@ void Match::match_main(bool begin)
 	// Close the SQL connection
 	sqlite3_close(db);
 
-	//Free resources and close SDL
+	// Free resources and close SDL
 	close();
 }
 
@@ -423,7 +429,7 @@ void Match::get_ranks()
 
 void Match::close()
 {
-	//Free loaded images
+	// Free loaded images
 	gBallTexture.free();
 	gPlayerOneTexture.free();
 	gPlayerTwoTexture.free();
@@ -431,17 +437,17 @@ void Match::close()
 	gTextTextureTwo.free();
 	gTextTextureTimer.free();
 
-	//Free global font
+	// Free global font
 	TTF_CloseFont(gFont);
 	gFont = NULL;
 
-	//Destroy window
+	// Destroy window
 	SDL_DestroyRenderer(gRenderer);
 	SDL_DestroyWindow(gWindow);
 	gWindow = NULL;
 	gRenderer = NULL;
 
-	//Quit SDL subsystems
+	// Quit SDL subsystems
 	TTF_Quit();
 	IMG_Quit();
 	SDL_Quit();

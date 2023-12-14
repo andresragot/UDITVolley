@@ -1,8 +1,12 @@
 #include "LTexture.h"
 
+/*
+	FUNCTIONS
+*/
+
 LTexture::LTexture()
 {
-	//Initialize
+	// Initialize
 	mTexture = NULL;
 	mWidth = 0;
 	mHeight = 0;
@@ -10,19 +14,19 @@ LTexture::LTexture()
 
 LTexture::~LTexture()
 {
-	//Deallocate
+	// Deallocate
 	free();
 }
 
 bool LTexture::load_from_file(std::string path, SDL_Renderer* gRenderer)
 {
-	//Get rid of preexisting texture
+	// Get rid of preexisting texture
 	free();
 
-	//The final texture
+	// The final texture
 	SDL_Texture* newTexture = NULL;
 
-	//Load image at specified path
+	// Load image at specified path
 	SDL_Surface* loadedSurface = IMG_Load(path.c_str());
 	if (loadedSurface == NULL)
 	{
@@ -30,10 +34,10 @@ bool LTexture::load_from_file(std::string path, SDL_Renderer* gRenderer)
 	}
 	else
 	{
-		//Color key image
+		// Color key image
 		SDL_SetColorKey(loadedSurface, SDL_TRUE, SDL_MapRGB(loadedSurface->format, 0, 0xFF, 0xFF));
 
-		//Create texture from surface pixels
+		// Create texture from surface pixels
 		newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
 		if (newTexture == NULL)
 		{
@@ -41,53 +45,57 @@ bool LTexture::load_from_file(std::string path, SDL_Renderer* gRenderer)
 		}
 		else
 		{
-			//Get image dimensions
+			// Get image dimensions
 			mWidth = loadedSurface->w;
 			mHeight = loadedSurface->h;
 		}
 
-		//Get rid of old loaded surface
+		// Get rid of old loaded surface
 		SDL_FreeSurface(loadedSurface);
 	}
 
-	//Return success
+	// Return success
 	mTexture = newTexture;
 	return mTexture != NULL;
 }
 
 bool LTexture::load_from_renderer_text(std::string textureText, SDL_Color textColor, TTF_Font* gFont, SDL_Renderer* gRenderer)
 {
-    //Get rid of preexisting texture
+    // Get rid of preexisting texture
     free();
 
-    //Render text surface 
+    // Render text surface 
     SDL_Surface* textSurface = TTF_RenderText_Solid(gFont, textureText.c_str(), textColor);
-    if (textSurface == NULL) {
+    if (textSurface == NULL) 
+	{
         printf("Unable to render text surface! SDL_ttf Error:%s\n", TTF_GetError());
     }
-    else {
-        //Create texture from surface pixels
+    else 
+	{
+        // Create texture from surface pixels
         mTexture = SDL_CreateTextureFromSurface(gRenderer, textSurface);
-        if (mTexture == NULL) {
+        if (mTexture == NULL) 
+		{
             printf("Unable to create texture from rendered text! SDL Error: %s\n", SDL_GetError());
         }
-        else {
-            //Get image dimensions
+        else 
+		{
+            // Get image dimensions
             mWidth = textSurface->w;
             mHeight = textSurface->h;
         }
-        //Get rid of old surface
+        // Get rid of old surface
         SDL_FreeSurface(textSurface);
     }
 
-    //Return succcess
+    // Return succcess
     return mTexture != NULL;
 
 }
 
 void LTexture::free()
 {
-	//Free texture if it exists
+	// Free texture if it exists
 	if (mTexture != NULL)
 	{
 		SDL_DestroyTexture(mTexture);
@@ -99,35 +107,35 @@ void LTexture::free()
 
 void LTexture::set_color(Uint8 red, Uint8 green, Uint8 blue)
 {
-	//Modulate texture rgb
+	// Modulate texture rgb
 	SDL_SetTextureColorMod(mTexture, red, green, blue);
 }
 
 void LTexture::set_blend_mode(SDL_BlendMode blending)
 {
-	//Set blending function
+	// Set blending function
 	SDL_SetTextureBlendMode(mTexture, blending);
 }
 
 void LTexture::set_alpha(Uint8 alpha)
 {
-	//Modulate texture alpha
+	// Modulate texture alpha
 	SDL_SetTextureAlphaMod(mTexture, alpha);
 }
 
 void LTexture::render(SDL_Renderer* gRenderer, int x, int y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip)
 {
-	//Set rendering space and render to screen
+	// Set rendering space and render to screen
 	SDL_Rect renderQuad = { x, y, mWidth, mHeight };
 
-	//Set clip rendering dimensions
+	// Set clip rendering dimensions
 	if (clip != NULL)
 	{
 		renderQuad.w = clip->w;
 		renderQuad.h = clip->h;
 	}
 
-	//Render to screen
+	// Render to screen
 	SDL_RenderCopyEx(gRenderer, mTexture, clip, &renderQuad, angle, center, flip);
 }
 
