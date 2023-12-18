@@ -2,8 +2,9 @@
 //
 #pragma warning(disable : 4996)
 
-#include "Match.h"
 #include <conio.h>
+#include <limits>
+#include "Match.h"
 
 
 using namespace std;
@@ -53,7 +54,7 @@ int menu()
         {
             num = 0;
             cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n'); //Descarta la entrada incorrecta
+            cin.ignore(10000, '\n'); //Descarta la entrada incorrecta
         }
     } while (!success);
     return num;
@@ -93,7 +94,7 @@ void play()
             break;
         
         case 3:
-            cout << "Function not developped yet" << endl;
+            match.begin_match_online();
             _getch();
             break;
         

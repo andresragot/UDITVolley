@@ -9,6 +9,9 @@ using namespace std;
 	EXTERN VARS
 */
 extern std::vector<Game> games_played;
+extern Data information;
+bool is_server = false;
+bool is_online = false;
 
 /*
 	FUNCTIONS
@@ -61,8 +64,15 @@ bool Match::check_player(sqlite3* db, std::string _name, bool _player)
 			}
 			else
 			{
-				player2 = get_player(db, _name);
-				return true;
+				if (player1.name != _name)
+				{
+					player2 = get_player(db, _name);
+					return true;
+				}
+				cout << "You can not use the same name as the first player" << endl;
+				cout << "Tell me another name please" << endl;
+				cin >> _name;
+				cout << endl;
 			}
 		}
 		else if (_option == "N")
@@ -82,27 +92,88 @@ bool Match::check_player(sqlite3* db, std::string _name, bool _player)
 
 void Match::begin_match(sqlite3* db)
 {
-    string _name1, _name2, _option;
-	system("cls");
-    cout << "Tell me the name of the first player" << endl;
-    cin >> _name1;
-	cout << endl;
-	if (!check_player(db, _name1, true))
+	if (is_online)
 	{
-		player1 = Player(_name1, 1);
+		if (is_server)
+		{
+			string _name, _option;
+			system("cls");
+			cout << "Tell your name" << endl;
+			cin >> _name;
+			if (is_server)
+			{
+				if (!check_player(db, _name, true))
+				{
+					player1 = Player(_name, 1);
+				}
+				insert_player(db, player1); // If they already are, they do not save
+			}
+			else 
+			{
+				if (!check_player(db, _name, false))
+				{
+					player2 = Player(_name, 2);
+				}
+				insert_player(db, player2); // If they already are, they do not save
+			}
+		}
+	}
+	else
+	{
+		string _name1, _name2, _option;
+		system("cls");
+		cout << "Tell me the name of the first player" << endl;
+		cin >> _name1;
+		cout << endl;
+		if (!check_player(db, _name1, true))
+		{
+			player1 = Player(_name1, 1);
+		}
+
+		system("cls");
+		cout << endl << "Tell me the name of the second player" << endl;
+		cin >> _name2;
+		cout << endl;
+		if (!check_player(db, _name2, false))
+		{
+			player2 = Player(_name2, 2);
+		}
+		insert_player(db, player1); // If they already are, they do not save
+		insert_player(db, player2); // If they already are, they do not save
+	}
+	//TODO: modificar el check_player
+	//Modificar los updates para que siempre manden la info al struct
+	//Modificar los handle inputs de los players para que siempre se actualicen
+}
+
+void Match::begin_match_online()
+{
+	string option = "";
+	system("cls");
+	cout << "Do you want to host a match?" << endl;
+	cout << "Y Or N" << endl;
+	if ((cin >> option))
+	{
+		if (option == "Y")
+		{
+			server();
+		}
+		else if(option == "N")
+		{	
+			client();
+		}
+		else
+		{
+			cout << "Not available option" << endl;
+		}
+	}
+	else
+	{
+		cout << "Estas meando fuera del perol" << endl;
 	}
 
-	system("cls");
-    cout << endl << "Tell me the name of the second player" << endl;
-    cin >> _name2;
-	cout << endl;
-	if (!check_player(db, _name2, false))
-	{
-		player2 = Player(_name2, 2);
-	}
+	match_main(true);
 
-	insert_player(db, player1); // If they already are, they do not save
-	insert_player(db, player2); // If they already are, they do not save
 }
 
 void Match::handle_input(SDL_Event e)
@@ -118,6 +189,32 @@ void Match::update()
     player1.update();
     player2.move(wall);
     player2.update();
+
+	if (is_online)
+	{
+		if (is_server)
+		{
+			information.player.x = player1.pCollider.x;
+			information.player.y = player1.pCollider.y;
+			
+			Ball::Circle colliderBall = ball.get_collider();
+			information.ball.x = colliderBall.x;
+			information.ball.y = colliderBall.y;
+
+			information.playerPoints = player1.points;
+		}
+		else
+		{
+			information.player.x = player2.pCollider.x;
+			information.player.y = player2.pCollider.y;
+
+			Ball::Circle colliderBall = ball.get_collider();
+			information.ball.x = colliderBall.x;
+			information.ball.y = colliderBall.y;
+
+			information.playerPoints = player2.points;
+		}
+	}
 }
 
 bool Match::load_points()
@@ -271,7 +368,7 @@ void Match::match_main(bool begin)
 		cout << "Failed to open database" << endl;
 	}
 
-	if (begin) // If true begin game, if false resume game.
+	else if (begin) // If true begin game, if false resume game.
 	{
 		begin_match(db);
 	}

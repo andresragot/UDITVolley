@@ -8,18 +8,17 @@ class Ball
 {
 private:
 
+	//The velocity of the Ball
+	int mVelX, mVelY;
+
+
+public:	
+
 	struct Circle
 	{
 		int x, y;
 		int r;
 	};
-
-	//The velocity of the Ball
-	int mVelX, mVelY;
-
-	Circle ballCollider;
-
-public:	
 
 	Circle& get_collider();
 
@@ -43,5 +42,9 @@ public:
 	// De verdad me vas a leer todo para funarme? No me funes
 	bool check_collision(Circle& a, SDL_Rect& b);
 	double distance_squared(int x1, int y1, int x2, int y2);
+
+private:
+
+	Circle ballCollider;
 };
 

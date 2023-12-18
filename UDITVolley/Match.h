@@ -6,6 +6,7 @@
 #include "Player.h"
 #include "Ball.h"
 #include "SQL_Volley.h"
+#include "sockets.h"
 
 class Match
 {
@@ -30,6 +31,7 @@ public:
 
     bool check_player(sqlite3* db, std::string name, bool _player);
     void begin_match(sqlite3* db);
+    void begin_match_online();
     bool init_match();
     void match_main(bool begin);
     void load_match();

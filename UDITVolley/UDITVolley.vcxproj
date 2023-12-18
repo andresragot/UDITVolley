@@ -136,6 +136,7 @@
     <ClInclude Include="LTexture.h" />
     <ClInclude Include="Match.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="sockets.h" />
     <ClInclude Include="SQL_Volley.h" />
   </ItemGroup>
   <ItemGroup>
@@ -143,6 +144,7 @@
     <ClCompile Include="LTexture.cpp" />
     <ClCompile Include="Match.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="sockets.cpp" />
     <ClCompile Include="SQL_Volley.cpp" />
     <ClCompile Include="UDITVolley.cpp" />
   </ItemGroup>
