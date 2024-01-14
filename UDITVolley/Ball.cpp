@@ -9,6 +9,13 @@ Ball::Circle& Ball::get_collider()
     return ballCollider;
 }
 
+void Ball::set_position(Ball::Circle _position)
+{
+    ballCollider.x = _position.x;
+    ballCollider.y = _position.y;
+}
+
+
 Ball::Ball()
 {
     //Initialize the offsets

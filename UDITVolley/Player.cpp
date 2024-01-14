@@ -18,10 +18,45 @@ Player::Player()
 	id = 0;
 }
 
+SDL_Rect& Player::get_collider()
+{
+    return pCollider;
+}
+
+void Player::set_collider(SDL_Rect _position)
+{
+    pCollider.x = _position.x;
+    pCollider.y = _position.y;
+}
+
 void Player::handle_event(SDL_Event& event_handler)
 {
+    if (is_online)
+    {
+        if (event_handler.type == SDL_KEYDOWN && event_handler.key.repeat == 0)
+        {
+            // Adjust the velocity
+            switch (event_handler.key.keysym.sym)
+            {
+            case SDLK_w:if (canJump) { mVelY -= JUMP_SPEED; canJump = false; }break;
+            case SDLK_a: mVelX -= mSpeed; break;
+            case SDLK_d: mVelX += mSpeed; break;
+            }
+        }
+        // If a key was released
+        else if (event_handler.type == SDL_KEYUP && event_handler.key.repeat == 0)
+        {
+            // Adjust the velocity
+            switch (event_handler.key.keysym.sym)
+            {
+            case SDLK_a: mVelX += mSpeed; break;
+            case SDLK_d: mVelX -= mSpeed; break;
+            }
+        }
+    }
+
     // If a key was pressed
-    if (id % 2 == 0) 
+    else if (id % 2 == 0) 
     {
         if (event_handler.type == SDL_KEYDOWN && event_handler.key.repeat == 0)
         {

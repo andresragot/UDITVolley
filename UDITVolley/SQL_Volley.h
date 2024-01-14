@@ -1,11 +1,12 @@
 #pragma once
 
 #include <vector>
+#include <limits>
 #include "sqlite3/sqlite3.h"
 #include "Player.h"
 
 
-#define MAX_POINTS							25
+#define MAX_POINTS							5
 
 int db_get_table(sqlite3* db);
 int get_games();
@@ -21,7 +22,6 @@ Player get_player(sqlite3* db, std::string playerName);
 void update_player(sqlite3* db, Player p);
 
 void get_rankings(sqlite3* db);
-
 
 struct Game {
 	int id						= 0;

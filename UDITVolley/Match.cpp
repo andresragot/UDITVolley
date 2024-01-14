@@ -1,17 +1,29 @@
 #include "Match.h"
 #include <stdlib.h>     /* srand, rand */
+#include <conio.h>
 #pragma warning(disable : 4996)
 
 using namespace std;
+
+/*
+	GLOBAL VARS
+*/
+
+bool is_server = false;
+bool is_online = false;
 
 
 /*
 	EXTERN VARS
 */
+
 extern std::vector<Game> games_played;
 extern Data information;
-bool is_server = false;
-bool is_online = false;
+extern bool is_playing;
+
+// Main loop flag
+extern bool quit;
+
 
 /*
 	FUNCTIONS
@@ -59,6 +71,7 @@ bool Match::check_player(sqlite3* db, std::string _name, bool _player)
 		{
 			if (_player)
 			{
+				player1 = Player("DEFAULT", 1);
 				player1 = get_player(db, _name);
 				return true;
 			}
@@ -66,6 +79,7 @@ bool Match::check_player(sqlite3* db, std::string _name, bool _player)
 			{
 				if (player1.name != _name)
 				{
+					player2 = Player("DEFAULT", 2);
 					player2 = get_player(db, _name);
 					return true;
 				}
@@ -92,30 +106,28 @@ bool Match::check_player(sqlite3* db, std::string _name, bool _player)
 
 void Match::begin_match(sqlite3* db)
 {
+	
 	if (is_online)
 	{
+		string _name, _option;
+		system("cls");
+		cout << "Tell your name" << endl;
+		cin >> _name;
 		if (is_server)
 		{
-			string _name, _option;
-			system("cls");
-			cout << "Tell your name" << endl;
-			cin >> _name;
-			if (is_server)
+			if (!check_player(db, _name, true))
 			{
-				if (!check_player(db, _name, true))
-				{
-					player1 = Player(_name, 1);
-				}
-				insert_player(db, player1); // If they already are, they do not save
+				player1 = Player(_name, 1);
 			}
-			else 
+			insert_player(db, player1); // If they already are, they do not save
+		}
+		else 
+		{
+			if (!check_player(db, _name, false))
 			{
-				if (!check_player(db, _name, false))
-				{
-					player2 = Player(_name, 2);
-				}
-				insert_player(db, player2); // If they already are, they do not save
+				player2 = Player(_name, 2);
 			}
+			insert_player(db, player2); // If they already are, they do not save
 		}
 	}
 	else
@@ -141,9 +153,10 @@ void Match::begin_match(sqlite3* db)
 		insert_player(db, player1); // If they already are, they do not save
 		insert_player(db, player2); // If they already are, they do not save
 	}
-	//TODO: modificar el check_player
-	//Modificar los updates para que siempre manden la info al struct
-	//Modificar los handle inputs de los players para que siempre se actualicen
+	// TODO: modificar el check_player
+	// Thread del client y server
+	// Modificar los updates para que siempre manden la info al struct
+	// Modificar los handle inputs de los players para que siempre se actualicen
 }
 
 void Match::begin_match_online()
@@ -152,14 +165,20 @@ void Match::begin_match_online()
 	system("cls");
 	cout << "Do you want to host a match?" << endl;
 	cout << "Y Or N" << endl;
+	sqlite3* db = open_table();
 	if ((cin >> option))
 	{
 		if (option == "Y")
 		{
+			is_online = true;
+			is_server = true;
+			begin_match(db);
 			server();
 		}
 		else if(option == "N")
 		{	
+			is_online = true;
+			begin_match(db);
 			client();
 		}
 		else
@@ -172,7 +191,12 @@ void Match::begin_match_online()
 		cout << "Estas meando fuera del perol" << endl;
 	}
 
-	match_main(true);
+	cout << "Todo correcto jefe" << endl;
+
+	// Close the SQL connection
+	sqlite3_close(db);
+
+	match_main(false);
 
 }
 
@@ -194,25 +218,51 @@ void Match::update()
 	{
 		if (is_server)
 		{
-			information.player.x = player1.pCollider.x;
-			information.player.y = player1.pCollider.y;
-			
+			// Info que recibo
+			SDL_Rect position_player_two;
+			position_player_two.x = information.player_two.x;
+			position_player_two.y = information.player_two.y;
+			player2.set_collider(position_player_two);
+
+			cout << "Info que recibo: " << position_player_two.x << "|" << position_player_two.y << endl;
+
+			//player2.points = information.player_two.points;
+
+			// Info que envío
+			information.player_one.x = player1.pCollider.x;
+			information.player_one.y = player1.pCollider.y;
+
 			Ball::Circle colliderBall = ball.get_collider();
 			information.ball.x = colliderBall.x;
 			information.ball.y = colliderBall.y;
 
-			information.playerPoints = player1.points;
+			information.player_one.points = player1.points;
+			//information.player_two.points = player2.points;
 		}
 		else
 		{
-			information.player.x = player2.pCollider.x;
-			information.player.y = player2.pCollider.y;
+			// Info que recibo
+			SDL_Rect position_player_one;
+			position_player_one.x = information.player_one.x;
+			position_player_one.y = information.player_one.y;
+			player1.set_collider(position_player_one);
 
-			Ball::Circle colliderBall = ball.get_collider();
-			information.ball.x = colliderBall.x;
-			information.ball.y = colliderBall.y;
 
-			information.playerPoints = player2.points;
+			Ball::Circle colliderBall;
+			colliderBall.x = information.ball.x;
+			colliderBall.y = information.ball.y;
+			ball.set_position(colliderBall);
+
+			player1.points = information.player_one.points;
+			//player2.points = information.player_two.points;
+
+			cout << "Info que recibo: " << position_player_one.x << "|" << position_player_one.y << "|" << colliderBall.x << "|" << colliderBall.y << "|" << player1.points << endl;
+
+			// Info que envío
+			information.player_two.x = player2.pCollider.x;
+			information.player_two.y = player2.pCollider.y;
+
+			//information.player_two.points = player2.points;
 		}
 	}
 }
@@ -363,6 +413,8 @@ void Match::match_main(bool begin)
 {
 	sqlite3* db = open_table();
 
+	quit = false;
+
 	if (db == nullptr)
 	{
 		cout << "Failed to open database" << endl;
@@ -373,6 +425,8 @@ void Match::match_main(bool begin)
 		begin_match(db);
 	}
 
+	// Sets position to original
+	ball = Ball();
 
 	system("cls");
 	//Start up SDL and create window
@@ -394,9 +448,6 @@ void Match::match_main(bool begin)
 			Uint64 last = 0;
 			double deltaTime = 0;
 
-			// Main loop flag
-			bool quit = false;
-
 			// Event handler
 			SDL_Event event_handler;
 
@@ -406,9 +457,11 @@ void Match::match_main(bool begin)
 				player2.games++;
 			}
 
+			is_playing = true;
 			// While application is running
 			while (!quit)
 			{
+				
 				last = now;
 				now = SDL_GetPerformanceCounter();
 				
@@ -430,9 +483,21 @@ void Match::match_main(bool begin)
 						{
 							update_game(db, id, player1, player2, duration);
 						}
-						update_player(db, player1);
-						update_player(db, player2);
+						if (is_server)
+						{
+							update_player(db, player1);
+						}
+						else if (!is_online)
+						{
+							update_player(db, player2);
+						}
+						else
+						{
+							update_player(db, player1);
+							update_player(db, player2);
+						}
 						quit = true;
+						is_playing = false;
 					}
 					// Handle input
 					handle_input(event_handler);
@@ -458,25 +523,40 @@ void Match::match_main(bool begin)
 					if (player1.points >= MAX_POINTS)
 					{
 						player1.wins++;
-						cout << player1.name << " has won" << endl;
+						cout << "Player 1 has won" << endl;
 						cout << "Congratulations" << endl;
 					}
 					else if (player2.points >= MAX_POINTS)
 					{
 						player2.wins++;
-						cout << player2.name << " has won" << endl;
+						cout << "Player 2 has won" << endl;
 						cout << "Congratulations" << endl;
 					}
+					
 					if (begin)
 					{
 						save_game(db);
+						
 					}
-					else
+					else if (!is_online)
 					{
 						update_game(db, id, player1, player2, duration);
 					}
-					update_player(db, player1);
-					update_player(db, player2);
+
+					if (is_server)
+					{
+						update_player(db, player1);
+					}
+					else if (!is_online)
+					{
+						update_player(db, player2);
+					}
+					else 
+					{
+						update_player(db, player1);
+						update_player(db, player2);
+					}
+					is_playing = false;
 					quit = true;
 				}
 			}
@@ -501,6 +581,11 @@ void Match::load_match()
 	Game temp = games_played[res - 1];
 
 	id = temp.id;
+
+	// Sets all objects to its original position
+	ball = Ball();
+	player1 = Player(temp.name_player_1, 1);
+	player2 = Player(temp.name_player_2, 2);
 
 	player1 = get_player(db, temp.name_player_1);
 	player1.points = temp.points_player_1;

@@ -95,7 +95,6 @@ void play()
         
         case 3:
             match.begin_match_online();
-            _getch();
             break;
         
         case 4:
@@ -104,7 +103,6 @@ void play()
             break;
         
         case 5:
-            _getch();
             break;
         
         default:

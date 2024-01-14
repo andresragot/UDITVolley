@@ -106,7 +106,8 @@ int get_games()
         {
             num = 0;
             std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //Descarta la entrada incorrecta
+            std::string invalid_input;
+            std::getline(std::cin, invalid_input);
             std::cout << "Invalid option, please write a number from 1 to " << games_played.size() << std::endl;
         }
     } while (!success);

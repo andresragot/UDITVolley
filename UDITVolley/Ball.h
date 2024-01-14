@@ -21,6 +21,7 @@ public:
 	};
 
 	Circle& get_collider();
+	void set_position(Ball::Circle _position);
 
 	//The dimensions of the Ball
 	static const int RADIUS = 20;

@@ -3,6 +3,8 @@
 #include <string.h>
 #include <iostream>
 #include <SDL.h>
+
+#include "sockets.h"
 #include "LTexture.h"
 
 
@@ -34,13 +36,16 @@ public:
     Player();
     Player(std::string n, int i) : name(n), id(i) { pCollider.h = PLAYER_HEIGHT; pCollider.w = PLAYER_WIDTH; mVelX = 0; mVelY = 0; if (id % 2) { pCollider.x = 100; pCollider.y = 280; } else { pCollider.x = 400; pCollider.y = 280; } }
 
-    // Takes key presses and adjusts the Ball's velocity
+    SDL_Rect& get_collider();
+    void set_collider(SDL_Rect _position);
+
+    // Takes key presses and adjusts the Player's velocity
 	void handle_event(SDL_Event& event_handler);
 
-	// Moves the Ball
+	// Moves the Player
 	void move(SDL_Rect& wall);
 
-	// Shows the Ball on the screen
+	// Shows the Player on the screen
 	void render(LTexture& gBallTexture, SDL_Renderer* gRenderer);
 
     // Viste que te tengo los nombres como te gustan

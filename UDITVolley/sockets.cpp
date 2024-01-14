@@ -1,4 +1,5 @@
 #include <cstring> 
+#include <thread>
 #include "sockets.h"
 
 
@@ -6,6 +7,9 @@
     GLOBAL VARS
 */
 Data information;
+bool is_playing;
+bool quit;
+
 /*
     EXTERN VARS
 */
@@ -29,36 +33,120 @@ void close(SOCKET so)
     return;
 }
 
-void handle_client(int client_socket)
+void handle_client(int client_socket, int server_socket)
 {
     char buffer[RECEIVE_BUFFER_SIZE];
-    char message[200] = "Welcome to the server!\n";
+    char message[RECEIVE_BUFFER_SIZE] = "Welcome to the server!\n";
     int receive_message_size;
+    Data information_recv;
 
     send(client_socket, message, strlen(message) + 1, 0);
 
-    while (strcmp(message, "QUIT") != 0)
+    while (is_playing && strcmp(buffer, "QUIT") != 0)
     {
         if ((receive_message_size = recv(client_socket, buffer, RECEIVE_BUFFER_SIZE, 0)) < 0)
+        {
             fatal_error((char*)"Error receiving data.\n");
+        }
 
         buffer[receive_message_size] = '\0';
-        //cout << "[Client]: " << buffer << endl;
+        // Debug
+        std::cout << "[Client]: " << buffer << endl;
 
-        /*scanf("%s", message);
-        printf("[Server]: %s\n", message);*/
+        //std::cout << information.player_two.name;
+
+        from_string(buffer, information_recv);
+        //std::cout << information_recv.to_string() << endl;
+
+        information.player_two.x = information_recv.player_two.x;
+        information.player_two.y = information_recv.player_two.y;
+
+
         
-        strcpy(message, information.to_string().c_str());
+        if (strcmp(buffer, "QUIT") == 0)
+        {
+            quit = true;
+        }
+
+        if (is_playing)
+        {
+            strcpy(message, information.to_string().c_str());
+        }
+        else
+        {
+            strcpy(message, "QUIT");
+        }
+
+
         send(client_socket, message, strlen(message) + 1, 0);
     }
-     
-    cout << "Closing the connection..." << endl;
+    
+    std::cout << "Closing the connection..." << endl;
     closesocket(client_socket);
     is_online = false;
+
+    close(server_socket);
+}
+
+void handle_server(int server_socket)
+{
+    char message[RECEIVE_BUFFER_SIZE];
+    char buffer[RECEIVE_BUFFER_SIZE];
+    int bytes_received;
+    Data information_recv;
+
+    while (is_playing && strcmp(buffer, "QUIT") != 0)
+    {
+        if ((bytes_received = recv(server_socket, buffer, RECEIVE_BUFFER_SIZE, 0)) == SOCKET_ERROR)
+            fatal_error((char*)"Error receiving data");
+
+        buffer[bytes_received] = '\0';
+        // Debug
+        std::cout << "[Server]: " << buffer << endl;
+
+
+        from_string(buffer, information_recv);
+        std::cout << information_recv.to_string() << endl;
+
+        information.player_one.x = information_recv.player_one.x;
+        information.player_one.y = information_recv.player_one.y;
+
+        information.ball.x = information_recv.ball.x;
+        information.ball.y = information_recv.ball.y;
+
+        information.player_one.points = information_recv.player_one.points;
+        information.player_two.points = information_recv.player_two.points;
+
+        /*scanf("%s", message);
+        printf("[Client]: %s\n", message);*/
+
+        //message = information.to_string().c_str();
+
+        if (strcmp(buffer, "QUIT") == 0)
+        {
+            quit = true;
+        }
+
+        if (is_playing)
+        {
+            strcpy(message, information.to_string().c_str());
+        }
+        else
+        {
+            strcpy(message, "QUIT");
+        }
+        
+        send(server_socket, message, (size_t)(strlen(message) + 1), 0);
+    }
+    std::cout << "Closing the connection..." << endl;
+    closesocket(server_socket);
+    is_online = false;
+    WSACleanup();
 }
 
 void server()
 {
+    system("cls");
     is_server = true;
     SOCKET server_so, client_so;
     WSADATA wsa;
@@ -68,18 +156,18 @@ void server()
     unsigned short port;
     struct sockaddr_in server, client;
 
-    cout << "To what IP do you want to connect" << endl;
+    std::cout << "To what IP do you want to connect" << endl;
 
     if (!(cin >> ip))
     {
-        cout << "Error retreiving IP";
+        std::cout << "Error retreiving IP";
         return;
     }
 
-    cout << "Port you want to connect to" << endl;
+    std::cout << "Port you want to connect to" << endl;
     if (!(cin >> port))
     {
-        cout << "Error retreving Port" << endl;
+        std::cout << "Error retreving Port" << endl;
     }
 
 
@@ -92,13 +180,13 @@ void server()
     }
     else
     {
-        cout << "The libray Winsock 2.2 has been initialized" << endl;
+        std::cout << "The libray Winsock 2.2 has been initialized" << endl;
     }
 
     if ((server_so = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
         fatal_error((char*)"Error creating socket.\n");
 
-    cout << "Socket created" << endl;
+    std::cout << "Socket created" << endl;
 
     memset(&server, 0, sizeof(server));
     server.sin_family = AF_INET;
@@ -111,52 +199,47 @@ void server()
     if (listen(server_so, MAX_PENDING) < 0)
         fatal_error((char*)"Listen failed.\n");
 
-    cout << "Waiting entering connections" << endl;
+    std::cout << "Waiting entering connections" << endl;
 
     is_online = true;
 
-    while (1)
-    {
+    do {
         client_length = sizeof(client);
 
         if ((client_so = accept(server_so, (struct sockaddr*)&client, &client_length)) < 0)
             fatal_error((char*)"Error in accept.\n");
 
-        cout << "New conecction accepted " << inet_ntoa(client.sin_addr) << endl;
-        handle_client(client_so);
-    }
+        std::cout << "New conecction accepted " << inet_ntoa(client.sin_addr) << endl;
 
-    close(server_so);
-    is_online = false;
-    return;
+    } while (!client_so);
+
+    is_playing = true;
+    std::thread server_thread(handle_client, client_so, server_so);
+    server_thread.detach();
 }
 
 void client()
 {
+    system("cls");
     SOCKET so;
     WSADATA wsa;
     string server_ip = "";
-    char message[200];
-    char buffer[RECEIVE_BUFFER_SIZE];
     unsigned short server_port;
-    int bytes_received;
     struct sockaddr_in server;
 
-    cout << "To what IP do you want to connect" << endl;
+    std::cout << "To what IP do you want to connect" << endl;
     
     if (!(cin >> server_ip))
     {
-        cout << "Error retreiving IP";
+        std::cout << "Error retreiving IP";
         return;
     }
 
-    cout << "Port you want to connect to" << endl;
+    std::cout << "Port you want to connect to" << endl;
     if (!(cin >> server_port))
     {
-        cout << "Error retreving Port" << endl;
+        std::cout << "Error retreving Port" << endl;
     }
-
-
 
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
         fatal_error((char*)"WSAStartup fallido");
@@ -167,13 +250,13 @@ void client()
     }
     else
     {
-        cout << "The libray Winsock 2.2 has been initialized" << endl;
+        std::cout << "The libray Winsock 2.2 has been initialized" << endl;
     }
 
     if ((so = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
         fatal_error((char*)"Error creating socket");
 
-    cout << "Socket created" << endl;
+    std::cout << "Socket created" << endl;
 
     memset(&server, 0, sizeof(server));
     server.sin_family = AF_INET;
@@ -183,30 +266,15 @@ void client()
     if (connect(so, (struct sockaddr*)&server, sizeof server) < 0)
         fatal_error((char*)("Not able to connect to the server %s:%d.", server_ip, server_port));
 
-    cout << "Connecting to " << server_ip << ":" << server_port << endl;
+    std::cout << "Connecting to " << server_ip << ":" << server_port << endl;
 
     is_online = true;
+    is_playing = true;
+    std::thread client_thread(handle_server, so);    
+    client_thread.detach();
+}
 
-    while (strcmp(message, "QUIT") != 0)
-    {
-        if ((bytes_received = recv(so, buffer, RECEIVE_BUFFER_SIZE, 0)) == SOCKET_ERROR)
-            fatal_error((char*)"Error receiving data");
-
-        buffer[bytes_received] = '\0';
-        //cout << "[Server]: " << buffer << endl;
-
-
-        /*scanf("%s", message);
-        printf("[Client]: %s\n", message);*/
-
-        //message = information.to_string().c_str();
-
-        strcpy(message, information.to_string().c_str());
-
-        send(so, message, (size_t)(strlen(message) + 1), 0);
-    }
-
-    closesocket(so);
-    is_online = false;
-    WSACleanup();
+void from_string(char* _buffer, Data& _data)
+{
+    sscanf(_buffer, "%d|%d|%d|%d|%d|%d|%d|%d", &_data.player_one.x, &_data.player_one.y,&_data.player_two.x, &_data.player_two.y, &_data.ball.x, &_data.ball.y, &_data.player_one.points, &_data.player_two.points);
 }
